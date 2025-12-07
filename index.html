@@ -1,3 +1,5 @@
+プロトタイプ版日報デバック用
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -15,22 +17,6 @@
         .report-header { display: flex; justify-content: space-between; font-size: 0.9em; color: #666; margin-bottom: 5px;}
         .report-content strong { display: block; margin-top: 5px; color: #333; }
         .like-button { background-color: #f0f0f0; border: none; padding: 5px 10px; cursor: pointer; border-radius: 3px; }
-        /* 【追加】一覧ヘッダーのスタイル調整 */
-        .report-list-header { 
-            display: flex; 
-            justify-content: space-between; /* 左右に配置 */
-            align-items: center; 
-            margin-bottom: 10px; 
-        }
-        .show-more-button { 
-            background-color: #007bff; 
-            color: white; 
-            border: none; 
-            padding: 8px 15px; 
-            border-radius: 5px; 
-            cursor: pointer; 
-            font-size: 0.9em;
-        }
     </style>
 </head>
 <body>
@@ -38,8 +24,8 @@
     <h1>SysLog (システム課日報)</h1>
 
     <form class="report-form">
-        <h2>日報を投稿する</h2>
-        <input type="text" id="name" placeholder="名前 (必須)" required>
+        <h2>日報を投稿する</h2>
+        <input type="text" id="name" placeholder="名前 (必須)" required>
     
     <label>コンディション (必須):</label><br>
 
@@ -85,13 +71,9 @@
 
     <hr>
     
-    <div class="report-list-header">
-        <h2>過去の日報一覧</h2>
-        <div id="showMoreContainer"></div> 
-    </div>
-
+    <h2>過去の日報一覧</h2>
     <div id="reportList">
-    </div>
+        </div>
 
     <script>
         // ----------------------------------------------------
@@ -99,12 +81,6 @@
         // ----------------------------------------------------
         // ここにGASのウェブアプリURLを貼り付けます
         const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwV0pz9MJwhiHAMywG6nMRBWefmcpa1YpSDYwfAYkrROpiFTez9TuINq0tfM0T3PvdGGg/exec'; 
-        
-        // 【追加】表示制御用の変数
-        const INITIAL_LIMIT = 10; // 最初に表示する件数
-        const DISPLAY_STEP = 10; // 「さらに表示」で増やす件数
-        let currentLimit = INITIAL_LIMIT; // 現在の表示件数
-        let allReports = []; // 全ての日報データを保持する配列
 
         // ----------------------------------------------------
         // 2. 機能 ②: 日報一覧表示機能 (GET)
@@ -112,15 +88,32 @@
         async function fetchReports() {
             try {
                 // GAS側でCORSヘッダーを付けているので、一覧を取得できます
-                // 初回は全てのデータを取得
                 const response = await fetch(GAS_WEB_APP_URL); 
                 const data = await response.json();
                 
-                // 【変更】取得した全データをグローバル変数に保存
-                allReports = data.data; 
-
-                // 描画関数を呼び出す
-                renderReports();
+                const reportListElement = document.getElementById('reportList');
+                reportListElement.innerHTML = ''; 
+                
+                data.data.forEach(report => {
+                    const item = document.createElement('div');
+                    item.className = 'report-item';
+                    item.innerHTML = `
+                        <div class="report-header">
+                            <span>**${report.name}** / ${report.date} / コンディション: ${report.condition}</span>
+                            <span>
+                                <button class="like-button" onclick="likeReport('${report.id}', this)">
+                                    いいね👍 (<span id="likeCount-${report.id}">${report.likes}</span>)
+                                </button>
+                            </span>
+                        </div>
+                        <div class="report-content">
+                            <strong>今日やったこと:</strong> ${report.todayTask.replace(/\n/g, '<br>')}
+                            <strong>翌営業日やること:</strong> ${report.nextTask.replace(/\n/g, '<br>')}
+                            <strong>所感・学び:</strong> ${report.impression.replace(/\n/g, '<br>')}
+                        </div>
+                    `;
+                    reportListElement.appendChild(item);
+                });
 
             } catch (error) {
                 console.error("日報の読み込み中にエラーが発生しました:", error);
@@ -128,70 +121,6 @@
             }
         }
         
-        // 【追加】日報を実際に画面に描画する関数
-        function renderReports() {
-            const reportListElement = document.getElementById('reportList');
-            reportListElement.innerHTML = ''; // 一旦クリア
-            
-            // 表示する日報を currentLimit までに絞る（新しいものから currentLimit 件）
-            const reportsToDisplay = allReports.slice(0, currentLimit); 
-
-            reportsToDisplay.forEach(report => {
-                const item = document.createElement('div');
-                item.className = 'report-item';
-                item.innerHTML = `
-                    <div class="report-header">
-                        <span>**${report.name}** / ${report.date} / コンディション: ${report.condition}</span>
-                        <span>
-                            <button class="like-button" onclick="likeReport('${report.id}', this)">
-                                いいね👍 (<span id="likeCount-${report.id}">${report.likes}</span>)
-                            </button>
-                        </span>
-                    </div>
-                    <div class="report-content">
-                        <strong>今日やったこと:</strong> ${report.todayTask.replace(/\n/g, '<br>')}
-                        <strong>翌営業日やること:</strong> ${report.nextTask.replace(/\n/g, '<br>')}
-                        <strong>所感・学び:</strong> ${report.impression.replace(/\n/g, '<br>')}
-                    </div>
-                `;
-                reportListElement.appendChild(item);
-            });
-            
-            // 【追加】「さらに過去の日報を表示する」ボタンの表示制御
-            updateShowMoreButton();
-        }
-
-        // 【追加】ボタンの表示・非表示を切り替える関数
-        function updateShowMoreButton() {
-            const showMoreContainer = document.getElementById('showMoreContainer');
-            showMoreContainer.innerHTML = ''; // ボタンコンテナをクリア
-
-            // 全体の件数が現在の表示件数より多い場合にボタンを表示
-            if (allReports.length > currentLimit) {
-                const button = document.createElement('button');
-                button.className = 'show-more-button';
-                // あと何件残っているかを表示
-                const remaining = allReports.length - currentLimit;
-                button.textContent = `さらに過去の日報を表示する (${remaining}件)`; 
-                button.onclick = showMoreReports; // クリック時のアクションを設定
-                showMoreContainer.appendChild(button);
-            }
-        }
-
-        // 【追加】「さらに表示」ボタンが押された時の処理
-        function showMoreReports() {
-            // 表示件数を増やす
-            currentLimit += DISPLAY_STEP; 
-            
-            // 全体の件数を超えないように調整
-            if (currentLimit > allReports.length) {
-                currentLimit = allReports.length;
-            }
-            
-            // 日報を再描画
-            renderReports(); 
-        }
-
         // ----------------------------------------------------
         // 3. 機能 ①: 日報投稿機能 (POST) 
         // ----------------------------------------------------
@@ -223,5 +152,24 @@
 
                 alert('日報が正常に投稿されました！');
                 document.querySelector('.report-form').reset(); 
-                
-                // 【
+                fetchReports(); // 投稿後、一覧を更新
+
+            } catch (error) {
+                console.error('投稿中にエラーが発生しました:', error);
+                alert('通信エラーにより投稿できませんでした。');
+            }
+        }
+
+        // ----------------------------------------------------
+        // 4. 機能 ③: 「いいね」リアクション機能 (保留部分)
+        // ----------------------------------------------------
+        async function likeReport(reportId, buttonElement) {
+            alert(`ID: ${reportId} の日報に「いいね」を押しました！\n\n（※いいね数の更新処理は、次のステップで実装します）`);
+        }
+        
+        // 5. ページ読み込み時の処理
+        window.onload = fetchReports;
+
+    </script>
+</body>
+</html>
