@@ -1,26 +1,20 @@
 <!DOCTYPE html>
-<html>
+<html lang="ja">
 <head>
-    <base target="_top">
-    <title>会社日報アプリ</title>
-    
-    <style>
-      <?!= include('style'); ?>
-    </style>
-    <script>
-  <?!= include('script.html'); ?>
-</script>
-    
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Pulse - システム課日報</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <div class="container">
-        <h1>会社日報投稿アプリ ✍️</h1>
+        <h1>System Pulse - システム課日報 ✍️</h1>
 
         <form id="reportForm">
             <h2>日報投稿</h2>
             <label for="name">名前 <span style="color: red;">*</span></label>
-            <input type="text" id="name" name="name" required placeholder="例: 山田太郎"> 
+            <input type="text" id="name" name="name" required placeholder="例: 山田太郎">
 
             <label>コンディション <span style="color: red;">*</span></label>
             <div class="condition-options">
@@ -55,8 +49,6 @@
             </ul>
     </div>
 
-    <script>
-      <?!= include('script'); ?>
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>
