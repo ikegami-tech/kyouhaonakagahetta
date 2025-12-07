@@ -3,29 +3,93 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GAS連携ウェブアプリ</title>
-    <link rel="stylesheet" href="style.css"> 
+    <title>Sysnipo - スプレッドシート連携</title>
+    <style>
+        body { font-family: sans-serif; max-width: 600px; margin: 2rem auto; padding: 0 1rem; }
+        .form-group { margin-bottom: 1rem; }
+        label { display: block; margin-bottom: 0.5rem; }
+        input, textarea { width: 100%; padding: 0.5rem; }
+        button { padding: 0.5rem 1rem; background: #007bff; color: white; border: none; cursor: pointer; }
+        #data-list { margin-top: 2rem; border-top: 1px solid #ccc; padding-top: 1rem; }
+        .item { background: #f9f9f9; padding: 1rem; margin-bottom: 0.5rem; border-radius: 4px; }
+    </style>
 </head>
 <body>
 
-    <h1>📝 データ入力フォーム</h1>
-    <p>お名前を入力して送信ボタンを押してください。</p>
-    <form id="dataForm">
-        <label for="name">お名前:</label>
-        <input type="text" id="name" required>
-        <button type="submit">送信</button>
-        <p id="message"></p>
-    </form>
+    <h1>スプレッドシート連携デモ</h1>
 
-    <hr>
+    <div class="form-group">
+        <label>お名前</label>
+        <input type="text" id="name" placeholder="名前を入力">
+    </div>
+    <div class="form-group">
+        <label>メッセージ</label>
+        <textarea id="message" placeholder="メッセージを入力"></textarea>
+    </div>
+    <button onclick="sendData()">送信する</button>
 
-    <h2>📜 保存されたデータ一覧</h2>
-    <div id="dataList">
-        <p>データを読み込み中...</p>
+    <div id="data-list">
+        読み込み中...
     </div>
 
-    <input type="hidden" id="gas-url" value="https://script.google.com/macros/s/AKfycbwPJ8nfApQXfhwSsPD9lvL7m91O1DKc2BgVyUayg_LgAYmJfrdJCp611MPhI9aoqjPM/exec">
+    <script>
+        // ★ここにGASのURLを貼り付けてください
+        const GAS_URL = "https://script.google.com/macros/s/AKfycby9fFARhLt5G-4ygnxmdMTCLt3aUeGmYHhv6ZYWoLYcCBsE_2P6XpAs_XQ0PsXKQTJGtg/exec";
 
-    <script src="script.js"></script>
+        // データ送信（POST）
+        function sendData() {
+            const name = document.getElementById('name').value;
+            const message = document.getElementById('message').value;
+
+            if(!name || !message) { alert("名前とメッセージを入力してください"); return; }
+
+            const data = { name: name, message: message };
+
+            fetch(GAS_URL, {
+                method: 'POST',
+                mode: 'no-cors', // 重要：CORSエラー回避のためno-corsを指定
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(() => {
+                alert("送信しました！");
+                document.getElementById('name').value = "";
+                document.getElementById('message').value = "";
+                fetchData(); // リストを更新
+            })
+            .catch(err => alert("送信エラー: " + err));
+        }
+
+        // データ取得（GET）
+        function fetchData() {
+            fetch(GAS_URL)
+            .then(response => response.json())
+            .then(data => {
+                const list = document.getElementById('data-list');
+                list.innerHTML = "<h2>受信したメッセージ一覧</h2>";
+                
+                // 新しい順に表示するために逆順にする
+                data.reverse().forEach(row => {
+                    const date = new Date(row[0]).toLocaleString();
+                    const name = row[1];
+                    const msg = row[2];
+                    
+                    const div = document.createElement('div');
+                    div.className = 'item';
+                    div.innerHTML = `<strong>${name}</strong> <small>(${date})</small><br>${msg}`;
+                    list.appendChild(div);
+                });
+            })
+            .catch(err => {
+                document.getElementById('data-list').innerHTML = "データの読み込みに失敗しました";
+                console.error(err);
+            });
+        }
+
+        // ページ読み込み時にデータを取得
+        window.onload = fetchData;
+    </script>
 </body>
 </html>
