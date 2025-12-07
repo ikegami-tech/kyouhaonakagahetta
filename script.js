@@ -10,7 +10,7 @@ dataForm.addEventListener('submit', function(e) {
     e.preventDefault(); 
     
     // URLが設定されているか確認
-    if (!GAS_WEB_APP_URL || GAS_WEB_APP_URL === '【ここにGASウェブアプリのURLを貼り付け】') {
+    if (!GAS_WEB_APP_URL || GAS_WEB_APP_URL === 'https://script.google.com/macros/s/AKfycbw2S7w-Jf6hN6SsXh8xhn3wX2tBxX8bQvxpYoAXu0t9s4n0UR9yQVJjwjH5Zt0dprpjOA/exec') {
         alert("GASのURLが設定されていません。index.htmlの隠しフィールドを修正してください。");
         return;
     }
