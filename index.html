@@ -124,7 +124,8 @@
         // ----------------------------------------------------
         async function postReport() {
             const name = document.getElementById('name').value.trim();
-            const condition = document.getElementById('condition').value;
+            const conditionElement = document.querySelector('input[name="condition"]:checked');
+            const condition = conditionElement ? conditionElement.value : '';
             const todayTask = document.getElementById('todayTask').value.trim();
             const nextTask = document.getElementById('nextTask').value.trim();
             const impression = document.getElementById('impression').value.trim();
