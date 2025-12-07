@@ -4,14 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GAS連携ウェブアプリ</title>
-    <style>
-        body { font-family: sans-serif; margin: 20px; }
-        #dataList { margin-top: 20px; border-top: 1px solid #ccc; padding-top: 10px; }
-        .record { padding: 5px 0; border-bottom: 1px dotted #eee; }
-        .record:last-child { border-bottom: none; }
-        input[type="text"] { padding: 8px; width: 200px; }
-        button { padding: 10px 15px; cursor: pointer; }
-    </style>
+    <link rel="stylesheet" href="style.css"> 
 </head>
 <body>
 
@@ -31,95 +24,8 @@
         <p>データを読み込み中...</p>
     </div>
 
-    <script>
-        // ★★★ デプロイしたGASウェブアプリのURLに置き換えてください ★★★
-        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbw2S7w-Jf6hN6SsXh8xhn3wX2tBxX8bQvxpYoAXu0t9s4n0UR9yQVJjwjH5Zt0dprpjOA/exec";
-        // ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
+    <input type="hidden" id="gas-url" value="【ここにGASウェブアプリのURLを貼り付け】">
 
-        const dataForm = document.getElementById('dataForm');
-        const dataList = document.getElementById('dataList');
-        const messageElement = document.getElementById('message');
-
-        // フォーム送信時の処理 (データ保存)
-        dataForm.addEventListener('submit', function(e) {
-            e.preventDefault(); // フォームのデフォルト送信をキャンセル
-            const nameInput = document.getElementById('name');
-            const name = nameInput.value;
-
-            if (!name) {
-                alert("名前を入力してください。");
-                return;
-            }
-
-            messageElement.textContent = "送信中...";
-            messageElement.style.color = 'blue';
-
-            // GASへデータをPOST送信
-            fetch(GAS_WEB_APP_URL, {
-                method: 'POST',
-                // JSON形式でデータを送信
-                body: JSON.stringify({ name: name }),
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    messageElement.textContent = "✅ データが正常に保存されました！";
-                    messageElement.style.color = 'green';
-                    nameInput.value = ''; // フォームをクリア
-                    fetchDataAndDisplay(); // データ一覧を再読み込み
-                } else {
-                    messageElement.textContent = `❌ 保存エラー: ${data.message}`;
-                    messageElement.style.color = 'red';
-                }
-            })
-            .catch(error => {
-                messageElement.textContent = `❌ 通信エラー: ${error.message}`;
-                messageElement.style.color = 'red';
-                console.error('Error:', error);
-            });
-        });
-
-        // データ一覧を取得して表示する処理
-        function fetchDataAndDisplay() {
-            dataList.innerHTML = '<p>データ取得中...</p>'; // ローディング表示
-
-            // GASへデータをGET送信 (データ取得)
-            fetch(GAS_WEB_APP_URL)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(data => {
-                dataList.innerHTML = ''; // 一覧をクリア
-
-                if (data.status === 'success' && data.data && data.data.length > 0) {
-                    // データをリストとして表示
-                    data.data.forEach(record => {
-                        const div = document.createElement('div');
-                        div.className = 'record';
-                        div.textContent = `名前: ${record.name} (保存日時: ${record.timestamp})`;
-                        dataList.appendChild(div);
-                    });
-                } else if (data.status === 'success' && data.data.length === 0) {
-                    dataList.innerHTML = '<p>まだデータがありません。</p>';
-                } else {
-                    dataList.innerHTML = `<p>データ取得エラー: ${data.message}</p>`;
-                }
-            })
-            .catch(error => {
-                dataList.innerHTML = `<p style="color:red;">データの読み込みに失敗しました: ${error.message}</p>`;
-                console.error('Fetch Error:', error);
-            });
-        }
-
-        // ページ読み込み完了時にデータ一覧を読み込む
-        window.onload = fetchDataAndDisplay;
-
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>
