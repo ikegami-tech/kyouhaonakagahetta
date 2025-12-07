@@ -7,7 +7,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const submitButton = document.getElementById('submitButton');
 
     // --- GASとの通信ヘルパー関数 ---
-    // google.script.run をPromiseでラップし、GASのサーバー側関数を非同期で呼び出す
     function postToGas(action, data) {
         return new Promise((resolve, reject) => {
             google.script.run
@@ -22,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
         loadingElement.style.display = 'block';
         listElement.innerHTML = '';
         
-        postToGas('getReports', null) // GASの getReports 関数を呼び出す
+        postToGas('getReports', null)
             .then(reports => {
                 loadingElement.style.display = 'none';
 
@@ -79,7 +78,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         button.disabled = true;
         
-        postToGas('incrementLike', reportId) // GASの incrementLike 関数を呼び出す
+        postToGas('incrementLike', reportId)
             .then(response => {
                 button.disabled = false;
                 if (response.status === 'success') {
@@ -107,7 +106,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const data = {};
         formData.forEach((value, key) => { data[key] = value; });
 
-        postToGas('doPost', data) // GASの doPost 関数を呼び出す
+        postToGas('doPost', data)
             .then(response => {
                 submitButton.disabled = false;
                 if (response.status === 'success') {
@@ -115,7 +114,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     messageElement.style.color = 'green';
                     form.reset(); 
 
-                    loadReports(); // 送信成功後、一覧をリロード
+                    loadReports(); 
                 } else {
                     messageElement.textContent = '❌ エラー: ' + response.message;
                     messageElement.style.color = 'red';
