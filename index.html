@@ -113,26 +113,34 @@
         // 機能 ①: 日報投稿機能
         // ----------------------------------------------------
         async function postReport() {
-            const name = document.getElementById('name').value.trim();
-            const condition = document.getElementById('condition').value;
-            const todayTask = document.getElementById('todayTask').value.trim();
-            const nextTask = document.getElementById('nextTask').value.trim();
-            const impression = document.getElementById('impression').value.trim();
+    // フォームから値を取得する処理（中略）
 
-            // 必須チェック
-            if (!name || !condition || !todayTask || !nextTask) {
-                alert('名前、コンディション、今日やったこと、翌営業日やること は必須項目です。');
-                return;
-            }
+    // 必須チェック（中略）
 
-            // GASに送るデータ（JSON形式）
-            const postData = {
-                name: name,
-                condition: condition,
-                todayTask: todayTask,
-                nextTask: nextTask,
-                impression: impression
-            };
+    // GASに送るデータ（postData）作成（中略）
+
+    try {
+        await fetch(GAS_WEB_APP_URL, {
+            method: 'POST',
+            mode: 'no-cors', // ★CORSエラー回避のための重要設定
+            headers: {
+                'Content-Type': 'application/json' 
+            },
+            body: JSON.stringify(postData) 
+        });
+
+        // 成功とみなす
+        alert('日報が正常に投稿されました！'); 
+        document.querySelector('.report-form').reset(); 
+        
+        // ★この行で、エラーになる「fetchReports」を呼んでいる
+        fetchReports(); 
+
+    } catch (error) {
+        console.error('投稿中にエラーが発生しました:', error);
+        alert('通信エラーにより投稿できませんでした。');
+    }
+}
 
             try {
                 // GASのURLにデータを送信 (POSTリクエスト)
