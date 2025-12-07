@@ -224,26 +224,4 @@
                 alert('日報が正常に投稿されました！');
                 document.querySelector('.report-form').reset(); 
                 
-                // 【変更】投稿後、表示件数をリセットして一覧を更新
-                currentLimit = INITIAL_LIMIT; 
-                fetchReports(); 
-
-            } catch (error) {
-                console.error('投稿中にエラーが発生しました:', error);
-                alert('通信エラーにより投稿できませんでした。');
-            }
-        }
-
-        // ----------------------------------------------------
-        // 4. 機能 ③: 「いいね」リアクション機能 (保留部分)
-        // ----------------------------------------------------
-        async function likeReport(reportId, buttonElement) {
-            alert(`ID: ${reportId} の日報に「いいね」を押しました！\n\n（※いいね数の更新処理は、次のステップで実装します）`);
-        }
-        
-        // 5. ページ読み込み時の処理
-        window.onload = fetchReports;
-
-    </script>
-</body>
-</html>
+                // 【
