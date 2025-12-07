@@ -25,13 +25,41 @@
         <h2>日報を投稿する</h2>
         <input type="text" id="name" placeholder="名前 (必須)" required>
     
-    <label for="condition">コンディション (必須):</label>
-    <select id="condition" required>
-        <option value="">選択してください</option>
-        <option value="😀">😀 (好調)</option>
-        <option value="🙂">🙂 (普通)</option>
-        <option value="😫">😫 (不調)</option>
-    </select>
+    <label>コンディション (必須):</label><br>
+
+<div class="condition-radios">
+    <input type="radio" id="cond1" name="condition" value="🤩" required>
+    <label for="cond1">🤩 (最高)</label>
+    
+    <input type="radio" id="cond2" name="condition" value="😀" required>
+    <label for="cond2">😀 (好調)</label>
+    
+    <input type="radio" id="cond3" name="condition" value="🙂" required>
+    <label for="cond3">🙂 (普通)</label>
+    
+    <input type="radio" id="cond4" name="condition" value="😐" required>
+    <label for="cond4">😐 (ぼちぼち)</label>
+    
+    <input type="radio" id="cond5" name="condition" value="😵‍💫" required>
+    <label for="cond5">😵‍💫 (やや疲労)</label>
+    
+    <input type="radio" id="cond6" name="condition" value="😫" required>
+    <label for="cond6">😫 (不調)</label>
+    
+    <input type="radio" id="cond7" name="condition" value="😴" required>
+    <label for="cond7">😴 (寝不足)</label>
+    
+    <input type="radio" id="cond8" name="condition" value="💪" required>
+    <label for="cond8">💪 (やる気満々)</label>
+    
+    <input type="radio" id="cond9" name="condition" value="🤔" required>
+    <label for="cond9">🤔 (考え中)</label>
+    
+    <input type="radio" id="cond10" name="condition" value="🥳" required>
+    <label for="cond10">🥳 (達成感)</label>
+
+</div>
+<br>
     
     <textarea id="todayTask" placeholder="今日やったこと (必須)" rows="3" required></textarea>
     <textarea id="nextTask" placeholder="翌営業日やること (必須)" rows="3" required></textarea>
