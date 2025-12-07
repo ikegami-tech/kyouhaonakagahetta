@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>SysLog (システム課日報)</title>
     <style>
-        /* 簡単なデザイン（CSS） */
+        /* CSSは<head>タグ内にあるのでOKです */
         body { font-family: sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
         h1 { border-bottom: 2px solid #ccc; padding-bottom: 5px; }
         .report-form input[type="text"], .report-form textarea, .report-form select {
@@ -47,155 +47,100 @@
         </div>
 
     <script>
-        // ★★★ここに、先ほどApps Scriptで取得した「ウェブアプリのURL」を入れてください★★★
+        // GASのURL
         const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwV0pz9MJwhiHAMywG6nMRBWefmcpa1YpSDYwfAYkrROpiFTez9TuINq0tfM0T3PvdGGg/exec'; 
 
         // ----------------------------------------------------
-        // 機能 ②: 日報一覧表示機能
+        // 機能 ②: 日報一覧表示機能 (GET)
         // ----------------------------------------------------
-        async function postReport() {
-    // フォームから値を取得する部分は変更なし
-    const name = document.getElementById('name').value.trim();
-    const condition = document.getElementById('condition').value;
-    const todayTask = document.getElementById('todayTask').value.trim();
-    const nextTask = document.getElementById('nextTask').value.trim();
-    const impression = document.getElementById('impression').value.trim();
+        async function fetchReports() {
+             // ... (ここに、エラーを防ぐために必要だった fetchReports のコード全体を入れます) ...
+             try {
+                const response = await fetch(GAS_WEB_APP_URL); 
+                const data = await response.json();
+                
+                const reportListElement = document.getElementById('reportList');
+                reportListElement.innerHTML = ''; 
+                
+                data.data.forEach(report => {
+                    const item = document.createElement('div');
+                    item.className = 'report-item';
+                    item.innerHTML = `
+                        <div class="report-header">
+                            <span>**${report.name}** / ${report.date} / コンディション: ${report.condition}</span>
+                            <span>
+                                <button class="like-button" onclick="likeReport('${report.id}', this)">
+                                    いいね👍 (<span id="likeCount-${report.id}">${report.likes}</span>)
+                                </button>
+                            </span>
+                        </div>
+                        <div class="report-content">
+                            <strong>今日やったこと:</strong> ${report.todayTask.replace(/\n/g, '<br>')}
+                            <strong>翌営業日やること:</strong> ${report.nextTask.replace(/\n/g, '<br>')}
+                            <strong>所感・学び:</strong> ${report.impression.replace(/\n/g, '<br>')}
+                        </div>
+                    `;
+                    reportListElement.appendChild(item);
+                });
 
-    // 必須チェックは変更なし
-    if (!name || !condition || !todayTask || !nextTask) {
-        alert('名前、コンディション、今日やったこと、翌営業日やること は必須項目です。');
-        return;
-    }
-
-    // GASに送るデータ（JSON形式）
-    const postData = {
-        name: name,
-        condition: condition,
-        todayTask: todayTask,
-        nextTask: nextTask,
-        impression: impression
-    };
-
-    try {
-        // GASのURLにデータを送信 (POSTリクエスト)
-        const response = await fetch(GAS_WEB_APP_URL, {
-            method: 'POST',
-            mode: 'no-cors', // ★CORSエラー回避のため、この設定を追加
-            headers: {
-                // no-corsモードでは一部ヘッダーが無効になることがありますが、今回は残しておきます
-                'Content-Type': 'application/json' 
-            },
-            // JSONデータを文字列にして送信
-            body: JSON.stringify(postData) 
-        });
-
-        // ★重要: no-corsモードでは正常なレスポンスが取れないため、
-        // response.json() での判定は行わず、fetchに成功したら完了とみなします。
-
-        alert('日報が正常に投稿されました！');
-        // フォームをリセット
-        document.querySelector('.report-form').reset(); 
-        // 一覧を更新して、新しい投稿を表示
-        fetchReports();
-
-
-    } catch (error) {
-        // 通信ブロックなどの致命的なエラーが発生した場合のみここに来る
-        console.error('投稿中にエラーが発生しました:', error);
-        alert('通信エラーにより投稿できませんでした。');
-    }
-}
-
-        // ページが読み込まれたら、すぐに日報一覧を表示する
-        window.onload = fetchReports;
-
-        // ----------------------------------------------------
-        // 機能 ①: 日報投稿機能
-        // ----------------------------------------------------
-        async function postReport() {
-    // フォームから値を取得する処理（中略）
-
-    // 必須チェック（中略）
-
-    // GASに送るデータ（postData）作成（中略）
-
-    try {
-        await fetch(GAS_WEB_APP_URL, {
-            method: 'POST',
-            mode: 'no-cors', // ★CORSエラー回避のための重要設定
-            headers: {
-                'Content-Type': 'application/json' 
-            },
-            body: JSON.stringify(postData) 
-        });
-
-        // 成功とみなす
-        alert('日報が正常に投稿されました！'); 
-        document.querySelector('.report-form').reset(); 
+            } catch (error) {
+                console.error("日報の読み込み中にエラーが発生しました:", error);
+                document.getElementById('reportList').innerHTML = '<p>日報の読み込みに失敗しました。</p>';
+            }
+        }
         
-        // ★この行で、エラーになる「fetchReports」を呼んでいる
-        fetchReports(); 
+        // ----------------------------------------------------
+        // 機能 ①: 日報投稿機能 (POST) 
+        // ★★★ postReport関数は一つだけ残します ★★★
+        // ----------------------------------------------------
+        async function postReport() {
+            const name = document.getElementById('name').value.trim();
+            const condition = document.getElementById('condition').value;
+            const todayTask = document.getElementById('todayTask').value.trim();
+            const nextTask = document.getElementById('nextTask').value.trim();
+            const impression = document.getElementById('impression').value.trim();
 
-    } catch (error) {
-        console.error('投稿中にエラーが発生しました:', error);
-        alert('通信エラーにより投稿できませんでした。');
-    }
-}
+            if (!name || !condition || !todayTask || !nextTask) {
+                alert('名前、コンディション、今日やったこと、翌営業日やること は必須項目です。');
+                return;
+            }
+
+            const postData = {
+                name: name,
+                condition: condition,
+                todayTask: todayTask,
+                nextTask: nextTask,
+                impression: impression
+            };
 
             try {
-                // GASのURLにデータを送信 (POSTリクエスト)
-                const response = await fetch(GAS_WEB_APP_URL, {
+                // CORSエラー回避のため no-cors を使用
+                await fetch(GAS_WEB_APP_URL, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    // JSONデータを文字列にして送信
+                    mode: 'no-cors', 
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(postData) 
                 });
 
-                const result = await response.json();
-
-                if (result.status === 'success') {
-                    alert('日報が正常に投稿されました！');
-                    // フォームをリセット
-                    document.querySelector('.report-form').reset(); 
-                    // 一覧を更新して、新しい投稿を表示
-                    fetchReports();
-                } else {
-                    alert('投稿に失敗しました。');
-                }
+                alert('日報が正常に投稿されました！');
+                document.querySelector('.report-form').reset(); 
+                fetchReports(); // 投稿後、一覧を更新
 
             } catch (error) {
                 console.error('投稿中にエラーが発生しました:', error);
                 alert('通信エラーにより投稿できませんでした。');
             }
         }
-        
+
         // ----------------------------------------------------
-        // 機能 ③: 「いいね」リアクション機能
+        // 機能 ③: 「いいね」リアクション機能 (保留部分)
         // ----------------------------------------------------
         async function likeReport(reportId, buttonElement) {
-            // ★実装の簡略化のため、いいね機能は一旦保留します★
-            // GAS側の「いいね処理」も必要になるため、まずは投稿と一覧表示を完成させましょう。
             alert(`ID: ${reportId} の日報に「いいね」を押しました！\n\n（※いいね数の更新処理は、次のステップで実装します）`);
-            
-            // 【次のステップでの実装イメージ】
-            /*
-            try {
-                const response = await fetch(GAS_WEB_APP_URL + '?action=like&id=' + reportId, {
-                    method: 'GET' // GETリクエストでいいね処理を呼び出す
-                });
-                const result = await response.json();
-                if (result.status === 'success') {
-                    // 画面上のいいね数を+1する
-                    const countElement = document.getElementById(`likeCount-${reportId}`);
-                    countElement.textContent = parseInt(countElement.textContent) + 1;
-                }
-            } catch (error) {
-                console.error('いいね処理に失敗:', error);
-            }
-            */
         }
+        
+        // ページ読み込み時に、一覧表示を実行
+        window.onload = fetchReports;
 
     </script>
 </body>
