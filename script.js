@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     // 【重要】ここに、GASをデプロイしたウェブアプリのURLを貼り付けます
-    const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbx4JEHJTAhoZZHnqbdDPBZwx4kkIkL76g88DmA0p6f1rzti50xD8k5bEioG2DleDVxH5g/exec';
+    const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbyU0i0Apz5-0z-xTQYBJY3J6Hc1EWNgp5Ad9B7ODqJpOoNUxQb-q7BddR3LJJ_0quwY/exec;
 
     const form = document.getElementById('reportForm');
     const messageElement = document.getElementById('message');
