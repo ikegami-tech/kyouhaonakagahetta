@@ -53,42 +53,58 @@
         // ----------------------------------------------------
         // 機能 ②: 日報一覧表示機能
         // ----------------------------------------------------
-        async function fetchReports() {
-            try {
-                // GASのURLにアクセスして、データ（一覧）を取得する
-                const response = await fetch(GAS_WEB_APP_URL); 
-                const data = await response.json();
-                
-                const reportListElement = document.getElementById('reportList');
-                reportListElement.innerHTML = ''; // 一旦リストを空にする
-                
-                // 取得したデータを一つずつ画面に表示する
-                data.data.forEach(report => {
-                    const item = document.createElement('div');
-                    item.className = 'report-item';
-                    item.innerHTML = `
-                        <div class="report-header">
-                            <span>**${report.name}** / ${report.date} / コンディション: ${report.condition}</span>
-                            <span>
-                                <button class="like-button" onclick="likeReport('${report.id}', this)">
-                                    いいね👍 (<span id="likeCount-${report.id}">${report.likes}</span>)
-                                </button>
-                            </span>
-                        </div>
-                        <div class="report-content">
-                            <strong>今日やったこと:</strong> ${report.todayTask.replace(/\n/g, '<br>')}
-                            <strong>翌営業日やること:</strong> ${report.nextTask.replace(/\n/g, '<br>')}
-                            <strong>所感・学び:</strong> ${report.impression.replace(/\n/g, '<br>')}
-                        </div>
-                    `;
-                    reportListElement.appendChild(item);
-                });
+        async function postReport() {
+    // フォームから値を取得する部分は変更なし
+    const name = document.getElementById('name').value.trim();
+    const condition = document.getElementById('condition').value;
+    const todayTask = document.getElementById('todayTask').value.trim();
+    const nextTask = document.getElementById('nextTask').value.trim();
+    const impression = document.getElementById('impression').value.trim();
 
-            } catch (error) {
-                console.error("日報の読み込み中にエラーが発生しました:", error);
-                document.getElementById('reportList').innerHTML = '<p>日報の読み込みに失敗しました。</p>';
-            }
-        }
+    // 必須チェックは変更なし
+    if (!name || !condition || !todayTask || !nextTask) {
+        alert('名前、コンディション、今日やったこと、翌営業日やること は必須項目です。');
+        return;
+    }
+
+    // GASに送るデータ（JSON形式）
+    const postData = {
+        name: name,
+        condition: condition,
+        todayTask: todayTask,
+        nextTask: nextTask,
+        impression: impression
+    };
+
+    try {
+        // GASのURLにデータを送信 (POSTリクエスト)
+        const response = await fetch(GAS_WEB_APP_URL, {
+            method: 'POST',
+            mode: 'no-cors', // ★CORSエラー回避のため、この設定を追加
+            headers: {
+                // no-corsモードでは一部ヘッダーが無効になることがありますが、今回は残しておきます
+                'Content-Type': 'application/json' 
+            },
+            // JSONデータを文字列にして送信
+            body: JSON.stringify(postData) 
+        });
+
+        // ★重要: no-corsモードでは正常なレスポンスが取れないため、
+        // response.json() での判定は行わず、fetchに成功したら完了とみなします。
+
+        alert('日報が正常に投稿されました！');
+        // フォームをリセット
+        document.querySelector('.report-form').reset(); 
+        // 一覧を更新して、新しい投稿を表示
+        fetchReports();
+
+
+    } catch (error) {
+        // 通信ブロックなどの致命的なエラーが発生した場合のみここに来る
+        console.error('投稿中にエラーが発生しました:', error);
+        alert('通信エラーにより投稿できませんでした。');
+    }
+}
 
         // ページが読み込まれたら、すぐに日報一覧を表示する
         window.onload = fetchReports;
