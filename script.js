@@ -28,21 +28,23 @@ dataForm.addEventListener('submit', function(e) {
 
     // GASへデータをPOST送信
     fetch(GAS_WEB_APP_URL, {
-        method: 'POST',
-        // JSON形式でデータを送信
-        body: JSON.stringify({ name: name }),
-        headers: {
-            // Content-Typeをapplication/jsonにすることで、GAS側でJSON.parse()が使える
-            'Content-Type': 'application/json',
-        },
-    })
-    .then(response => {
-        // HTTPステータスコードが200番台でなければエラーを投げる
-        if (!response.ok) {
-             throw new Error(`サーバーエラー: ${response.statusText}`);
-        }
-        return response.json();
-    })
+    method: 'POST', 
+    
+    // 1. body属性: 送信するデータをJSON文字列に変換
+    body: JSON.stringify({ name: name }),
+    
+    headers: {
+        // 2. headers属性: Content-TypeをJSONに指定
+        'Content-Type': 'application/json',
+    },
+})
+.then(response => {
+    // 3. レスポンスがHTTPエラーでないかチェック（.json()の前に置くことで安全性が増す）
+    if (!response.ok) {
+        throw new Error(`HTTP Error! Status: ${response.status}`);
+    }
+    return response.json();
+})
     .then(data => {
         if (data.status === 'success') {
             messageElement.textContent = "✅ データが正常に保存されました！";
