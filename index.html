@@ -21,24 +21,22 @@
 
     <h1>SysLog (システム課日報)</h1>
 
-    <section class="report-form">
-        <h2>日報を投稿する</h2>
-        <input type="text" id="name" placeholder="名前 (必須)" required>
-        
-        <label for="condition">コンディション (必須):</label>
-        <select id="condition" required>
-            <option value="">選択してください</option>
-            <option value="😀">😀 (好調)</option>
-            <option value="🙂">🙂 (普通)</option>
-            <option value="😫">😫 (不調)</option>
-        </select>
-        
-        <textarea id="todayTask" placeholder="今日やったこと (必須)" rows="3" required></textarea>
-        <textarea id="nextTask" placeholder="翌営業日やること (必須)" rows="3" required></textarea>
-        <textarea id="impression" placeholder="所感・学び (任意)" rows="3"></textarea>
-        
-        <button onclick="postReport()">送信</button>
-    </section>
+    <form class="report-form">  <h2>日報を投稿する</h2>
+    <input type="text" id="name" placeholder="名前 (必須)" required>
+    
+    <label for="condition">コンディション (必須):</label>
+    <select id="condition" required>
+        <option value="">選択してください</option>
+        <option value="😀">😀 (好調)</option>
+        <option value="🙂">🙂 (普通)</option>
+        <option value="😫">😫 (不調)</option>
+    </select>
+    
+    <textarea id="todayTask" placeholder="今日やったこと (必須)" rows="3" required></textarea>
+    <textarea id="nextTask" placeholder="翌営業日やること (必須)" rows="3" required></textarea>
+    <textarea id="impression" placeholder="所感・学び (任意)" rows="3"></textarea>
+    
+    <button type="button" onclick="postReport()">送信</button> </form>
 
     <hr>
     
