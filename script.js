@@ -9,7 +9,8 @@ const messageElement = document.getElementById('message');
 dataForm.addEventListener('submit', function(e) {
     e.preventDefault(); 
     
-    if (!GAS_WEB_APP_URL || GAS_WEB_APP_URL.includes('【')) {
+    // URLが設定されているか確認
+    if (!GAS_WEB_APP_URL || GAS_WEB_APP_URL === '【ここにGASウェブアプリのURLを貼り付け】') {
         alert("GASのURLが設定されていません。index.htmlの隠しフィールドを修正してください。");
         return;
     }
@@ -22,18 +23,22 @@ dataForm.addEventListener('submit', function(e) {
         return;
     }
 
+    // メッセージを更新
     messageElement.textContent = "送信中...";
     messageElement.style.color = 'blue';
 
-    // 💡 修正点: データをURLクエリ文字列に変換
-    const params = new URLSearchParams({ name: name });
-
-    // GASへデータをPOST送信。データをURLクエリとして付与し、シンプルなリクエストとする。
-    fetch(GAS_WEB_APP_URL + '?' + params.toString(), {
+    // GASへデータをPOST送信
+    fetch(GAS_WEB_APP_URL, {
         method: 'POST',
-        // Content-Typeヘッダーを付けていないため、プリフライトリクエストが発生しない
+        // JSON形式でデータを送信
+        body: JSON.stringify({ name: name }),
+        headers: {
+            // Content-Typeをapplication/jsonにすることで、GAS側でJSON.parse()が使える
+            'Content-Type': 'application/json',
+        },
     })
     .then(response => {
+        // HTTPステータスコードが200番台でなければエラーを投げる
         if (!response.ok) {
              throw new Error(`サーバーエラー: ${response.statusText}`);
         }
@@ -57,10 +62,11 @@ dataForm.addEventListener('submit', function(e) {
     });
 });
 
-// --- データ一覧を取得して表示する処理 (GETリクエスト) ---
+// --- データの取得と表示 ---
 function fetchDataAndDisplay() {
     dataList.innerHTML = '<p>データ取得中...</p>'; // ローディング表示
 
+    // GASへデータをGET送信 (データ取得)
     fetch(GAS_WEB_APP_URL)
     .then(response => {
         if (!response.ok) {
@@ -71,10 +77,19 @@ function fetchDataAndDisplay() {
     .then(data => {
         dataList.innerHTML = ''; // 一覧をクリア
 
-        if (data.status === 'success' && data.data && data.data.length > 0) {
-            data.data.reverse(); // 最新のデータが上に来るように逆順にソート
+        if (data.status === 'success' && data.data) {
+            const records = data.data;
 
-            data.data.forEach(record => {
+            if (records.length === 0) {
+                 dataList.innerHTML = '<p>まだデータがありません。</p>';
+                 return;
+            }
+            
+            // 最新のデータが上に来るように逆順にソート（任意）
+            records.reverse();
+
+            // データをリストとして表示
+            records.forEach(record => {
                 const div = document.createElement('div');
                 div.className = 'record';
                 
@@ -89,8 +104,6 @@ function fetchDataAndDisplay() {
                 div.appendChild(timeSpan);
                 dataList.appendChild(div);
             });
-        } else if (data.status === 'success' && data.data.length === 0) {
-            dataList.innerHTML = '<p>まだデータがありません。</p>';
         } else {
             dataList.innerHTML = `<p>データ取得エラー: ${data.message}</p>`;
         }
