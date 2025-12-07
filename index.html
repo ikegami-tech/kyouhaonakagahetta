@@ -1,31 +1,75 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GAS連携ウェブアプリ</title>
-    <link rel="stylesheet" href="style.css"> 
-</head>
-<body>
+body { 
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+    margin: 40px; 
+    background-color: #f4f7f6;
+    color: #333;
+}
 
-    <h1>📝 データ入力フォーム</h1>
-    <p>お名前を入力して送信ボタンを押してください。</p>
-    <form id="dataForm">
-        <label for="name">お名前:</label>
-        <input type="text" id="name" required>
-        <button type="submit">送信</button>
-        <p id="message"></p>
-    </form>
+h1, h2 {
+    color: #1e88e5;
+    border-bottom: 2px solid #1e88e5;
+    padding-bottom: 5px;
+    margin-top: 25px;
+}
 
-    <hr>
+#dataForm {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
 
-    <h2>📜 保存されたデータ一覧</h2>
-    <div id="dataList">
-        <p>データを読み込み中...</p>
-    </div>
+input[type="text"] { 
+    padding: 10px; 
+    width: 250px; 
+    margin-right: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
 
-    <input type="hidden" id="gas-url" value="https://script.google.com/macros/s/AKfycbytZXL6biu3flqsjeLI13e2zy10PlOFFahoUzKZhoRvlR91z4OKEawECMezH1N8qkbDfg/exec">
+button[type="submit"] { 
+    padding: 10px 20px; 
+    cursor: pointer; 
+    background-color: #00bcd4;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-weight: bold;
+    transition: background-color 0.3s;
+}
 
-    <script src="script.js"></script>
-</body>
-</html>
+button[type="submit"]:hover {
+    background-color: #0097a7;
+}
+
+#message {
+    margin-top: 15px;
+    font-weight: bold;
+}
+
+#dataList { 
+    margin-top: 20px; 
+    padding: 15px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.record { 
+    padding: 10px 0; 
+    border-bottom: 1px dashed #e0e0e0; 
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.95em;
+}
+
+.record:last-child { 
+    border-bottom: none; 
+}
+
+.record .timestamp {
+    color: #777;
+    font-style: italic;
+    font-size: 0.85em;
+}
