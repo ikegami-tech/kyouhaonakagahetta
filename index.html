@@ -21,8 +21,9 @@
 
     <h1>SysLog (システム課日報)</h1>
 
-    <section class="report-form">
+    <form class="report-form">
         <h2>日報を投稿する</h2>
+        
         <input type="text" id="name" placeholder="名前 (必須)" required>
         
         <label for="condition">コンディション (必須):</label>
@@ -38,8 +39,7 @@
         <textarea id="impression" placeholder="所感・学び (任意)" rows="3"></textarea>
         
         <button onclick="postReport()">送信</button>
-    </section>
-
+    </form>
     <hr>
     
     <h2>過去の日報一覧</h2>
