@@ -28,11 +28,10 @@ dataForm.addEventListener('submit', function(e) {
     // 💡 修正点: データをURLクエリ文字列に変換
     const params = new URLSearchParams({ name: name });
 
-    // GASへデータをPOST送信 (Content-Type: application/x-www-form-urlencoded 相当の形式で送信)
-    // プリフライトリクエストを回避できます
+    // GASへデータをPOST送信。データをURLクエリとして付与し、シンプルなリクエストとする。
     fetch(GAS_WEB_APP_URL + '?' + params.toString(), {
         method: 'POST',
-        // Content-Typeヘッダーを付けていないため、ブラウザはシンプルなリクエストと認識します
+        // Content-Typeヘッダーを付けていないため、プリフライトリクエストが発生しない
     })
     .then(response => {
         if (!response.ok) {
@@ -44,8 +43,8 @@ dataForm.addEventListener('submit', function(e) {
         if (data.status === 'success') {
             messageElement.textContent = "✅ データが正常に保存されました！";
             messageElement.style.color = 'green';
-            nameInput.value = ''; 
-            fetchDataAndDisplay(); 
+            nameInput.value = ''; // フォームをクリア
+            fetchDataAndDisplay(); // データ一覧を再読み込み
         } else {
             messageElement.textContent = `❌ 保存エラー: ${data.message}`;
             messageElement.style.color = 'red';
@@ -58,10 +57,49 @@ dataForm.addEventListener('submit', function(e) {
     });
 });
 
-// --- データ取得 (doGet) のロジックは前回通り ---
+// --- データ一覧を取得して表示する処理 (GETリクエスト) ---
 function fetchDataAndDisplay() {
-    // ... (doGetのロジックは前回の回答を参照)
-    // ...
+    dataList.innerHTML = '<p>データ取得中...</p>'; // ローディング表示
+
+    fetch(GAS_WEB_APP_URL)
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        dataList.innerHTML = ''; // 一覧をクリア
+
+        if (data.status === 'success' && data.data && data.data.length > 0) {
+            data.data.reverse(); // 最新のデータが上に来るように逆順にソート
+
+            data.data.forEach(record => {
+                const div = document.createElement('div');
+                div.className = 'record';
+                
+                const nameSpan = document.createElement('span');
+                nameSpan.textContent = `名前: ${record.name}`;
+                
+                const timeSpan = document.createElement('span');
+                timeSpan.className = 'timestamp';
+                timeSpan.textContent = `保存日時: ${record.timestamp}`;
+                
+                div.appendChild(nameSpan);
+                div.appendChild(timeSpan);
+                dataList.appendChild(div);
+            });
+        } else if (data.status === 'success' && data.data.length === 0) {
+            dataList.innerHTML = '<p>まだデータがありません。</p>';
+        } else {
+            dataList.innerHTML = `<p>データ取得エラー: ${data.message}</p>`;
+        }
+    })
+    .catch(error => {
+        dataList.innerHTML = `<p style="color:red;">データの読み込みに失敗しました: ${error.message}</p>`;
+        console.error('Fetch Error:', error);
+    });
 }
 
+// ページ読み込み完了時にデータ一覧を読み込む
 window.onload = fetchDataAndDisplay;
