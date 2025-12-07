@@ -2,94 +2,177 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sysnipo - スプレッドシート連携</title>
+    <title>SysLog (システム課日報)</title>
     <style>
-        body { font-family: sans-serif; max-width: 600px; margin: 2rem auto; padding: 0 1rem; }
-        .form-group { margin-bottom: 1rem; }
-        label { display: block; margin-bottom: 0.5rem; }
-        input, textarea { width: 100%; padding: 0.5rem; }
-        button { padding: 0.5rem 1rem; background: #007bff; color: white; border: none; cursor: pointer; }
-        #data-list { margin-top: 2rem; border-top: 1px solid #ccc; padding-top: 1rem; }
-        .item { background: #f9f9f9; padding: 1rem; margin-bottom: 0.5rem; border-radius: 4px; }
+        /* 簡単なデザイン（CSS） */
+        body { font-family: sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        h1 { border-bottom: 2px solid #ccc; padding-bottom: 5px; }
+        .report-form input[type="text"], .report-form textarea, .report-form select {
+            width: 100%; padding: 8px; margin-bottom: 10px; box-sizing: border-box;
+        }
+        .report-form button { padding: 10px 15px; background-color: #4CAF50; color: white; border: none; cursor: pointer; }
+        .report-item { border: 1px solid #eee; padding: 15px; margin-bottom: 10px; border-radius: 5px; }
+        .report-header { display: flex; justify-content: space-between; font-size: 0.9em; color: #666; margin-bottom: 5px;}
+        .report-content strong { display: block; margin-top: 5px; color: #333; }
+        .like-button { background-color: #f0f0f0; border: none; padding: 5px 10px; cursor: pointer; border-radius: 3px; }
     </style>
 </head>
 <body>
 
-    <h1>スプレッドシート連携デモ</h1>
+    <h1>SysLog (システム課日報)</h1>
 
-    <div class="form-group">
-        <label>お名前</label>
-        <input type="text" id="name" placeholder="名前を入力">
-    </div>
-    <div class="form-group">
-        <label>メッセージ</label>
-        <textarea id="message" placeholder="メッセージを入力"></textarea>
-    </div>
-    <button onclick="sendData()">送信する</button>
+    <section class="report-form">
+        <h2>日報を投稿する</h2>
+        <input type="text" id="name" placeholder="名前 (必須)" required>
+        
+        <label for="condition">コンディション (必須):</label>
+        <select id="condition" required>
+            <option value="">選択してください</option>
+            <option value="😀">😀 (好調)</option>
+            <option value="🙂">🙂 (普通)</option>
+            <option value="😫">😫 (不調)</option>
+        </select>
+        
+        <textarea id="todayTask" placeholder="今日やったこと (必須)" rows="3" required></textarea>
+        <textarea id="nextTask" placeholder="翌営業日やること (必須)" rows="3" required></textarea>
+        <textarea id="impression" placeholder="所感・学び (任意)" rows="3"></textarea>
+        
+        <button onclick="postReport()">送信</button>
+    </section>
 
-    <div id="data-list">
-        読み込み中...
-    </div>
+    <hr>
+    
+    <h2>過去の日報一覧</h2>
+    <div id="reportList">
+        </div>
 
     <script>
-        // ★ここにGASのURLを貼り付けてください
-        const GAS_URL = "https://script.google.com/macros/s/AKfycby9fFARhLt5G-4ygnxmdMTCLt3aUeGmYHhv6ZYWoLYcCBsE_2P6XpAs_XQ0PsXKQTJGtg/exec";
+        // ★★★ここに、先ほどApps Scriptで取得した「ウェブアプリのURL」を入れてください★★★
+        const GAS_WEB_APP_URL = 'YOUR_GAS_WEB_APP_URL_HERE'; 
 
-        // データ送信（POST）
-        function sendData() {
-            const name = document.getElementById('name').value;
-            const message = document.getElementById('message').value;
-
-            if(!name || !message) { alert("名前とメッセージを入力してください"); return; }
-
-            const data = { name: name, message: message };
-
-            fetch(GAS_URL, {
-                method: 'POST',
-                mode: 'no-cors', // 重要：CORSエラー回避のためno-corsを指定
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(data)
-            })
-            .then(() => {
-                alert("送信しました！");
-                document.getElementById('name').value = "";
-                document.getElementById('message').value = "";
-                fetchData(); // リストを更新
-            })
-            .catch(err => alert("送信エラー: " + err));
-        }
-
-        // データ取得（GET）
-        function fetchData() {
-            fetch(GAS_URL)
-            .then(response => response.json())
-            .then(data => {
-                const list = document.getElementById('data-list');
-                list.innerHTML = "<h2>受信したメッセージ一覧</h2>";
+        // ----------------------------------------------------
+        // 機能 ②: 日報一覧表示機能
+        // ----------------------------------------------------
+        async function fetchReports() {
+            try {
+                // GASのURLにアクセスして、データ（一覧）を取得する
+                const response = await fetch(GAS_WEB_APP_URL); 
+                const data = await response.json();
                 
-                // 新しい順に表示するために逆順にする
-                data.reverse().forEach(row => {
-                    const date = new Date(row[0]).toLocaleString();
-                    const name = row[1];
-                    const msg = row[2];
-                    
-                    const div = document.createElement('div');
-                    div.className = 'item';
-                    div.innerHTML = `<strong>${name}</strong> <small>(${date})</small><br>${msg}`;
-                    list.appendChild(div);
+                const reportListElement = document.getElementById('reportList');
+                reportListElement.innerHTML = ''; // 一旦リストを空にする
+                
+                // 取得したデータを一つずつ画面に表示する
+                data.data.forEach(report => {
+                    const item = document.createElement('div');
+                    item.className = 'report-item';
+                    item.innerHTML = `
+                        <div class="report-header">
+                            <span>**${report.name}** / ${report.date} / コンディション: ${report.condition}</span>
+                            <span>
+                                <button class="like-button" onclick="likeReport('${report.id}', this)">
+                                    いいね👍 (<span id="likeCount-${report.id}">${report.likes}</span>)
+                                </button>
+                            </span>
+                        </div>
+                        <div class="report-content">
+                            <strong>今日やったこと:</strong> ${report.todayTask.replace(/\n/g, '<br>')}
+                            <strong>翌営業日やること:</strong> ${report.nextTask.replace(/\n/g, '<br>')}
+                            <strong>所感・学び:</strong> ${report.impression.replace(/\n/g, '<br>')}
+                        </div>
+                    `;
+                    reportListElement.appendChild(item);
                 });
-            })
-            .catch(err => {
-                document.getElementById('data-list').innerHTML = "データの読み込みに失敗しました";
-                console.error(err);
-            });
+
+            } catch (error) {
+                console.error("日報の読み込み中にエラーが発生しました:", error);
+                document.getElementById('reportList').innerHTML = '<p>日報の読み込みに失敗しました。</p>';
+            }
         }
 
-        // ページ読み込み時にデータを取得
-        window.onload = fetchData;
+        // ページが読み込まれたら、すぐに日報一覧を表示する
+        window.onload = fetchReports;
+
+        // ----------------------------------------------------
+        // 機能 ①: 日報投稿機能
+        // ----------------------------------------------------
+        async function postReport() {
+            const name = document.getElementById('name').value.trim();
+            const condition = document.getElementById('condition').value;
+            const todayTask = document.getElementById('todayTask').value.trim();
+            const nextTask = document.getElementById('nextTask').value.trim();
+            const impression = document.getElementById('impression').value.trim();
+
+            // 必須チェック
+            if (!name || !condition || !todayTask || !nextTask) {
+                alert('名前、コンディション、今日やったこと、翌営業日やること は必須項目です。');
+                return;
+            }
+
+            // GASに送るデータ（JSON形式）
+            const postData = {
+                name: name,
+                condition: condition,
+                todayTask: todayTask,
+                nextTask: nextTask,
+                impression: impression
+            };
+
+            try {
+                // GASのURLにデータを送信 (POSTリクエスト)
+                const response = await fetch(GAS_WEB_APP_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    // JSONデータを文字列にして送信
+                    body: JSON.stringify(postData) 
+                });
+
+                const result = await response.json();
+
+                if (result.status === 'success') {
+                    alert('日報が正常に投稿されました！');
+                    // フォームをリセット
+                    document.querySelector('.report-form').reset(); 
+                    // 一覧を更新して、新しい投稿を表示
+                    fetchReports();
+                } else {
+                    alert('投稿に失敗しました。');
+                }
+
+            } catch (error) {
+                console.error('投稿中にエラーが発生しました:', error);
+                alert('通信エラーにより投稿できませんでした。');
+            }
+        }
+        
+        // ----------------------------------------------------
+        // 機能 ③: 「いいね」リアクション機能
+        // ----------------------------------------------------
+        async function likeReport(reportId, buttonElement) {
+            // ★実装の簡略化のため、いいね機能は一旦保留します★
+            // GAS側の「いいね処理」も必要になるため、まずは投稿と一覧表示を完成させましょう。
+            alert(`ID: ${reportId} の日報に「いいね」を押しました！\n\n（※いいね数の更新処理は、次のステップで実装します）`);
+            
+            // 【次のステップでの実装イメージ】
+            /*
+            try {
+                const response = await fetch(GAS_WEB_APP_URL + '?action=like&id=' + reportId, {
+                    method: 'GET' // GETリクエストでいいね処理を呼び出す
+                });
+                const result = await response.json();
+                if (result.status === 'success') {
+                    // 画面上のいいね数を+1する
+                    const countElement = document.getElementById(`likeCount-${reportId}`);
+                    countElement.textContent = parseInt(countElement.textContent) + 1;
+                }
+            } catch (error) {
+                console.error('いいね処理に失敗:', error);
+            }
+            */
+        }
+
     </script>
 </body>
 </html>
