@@ -3,7 +3,7 @@ document.getElementById('dataForm').addEventListener('submit', function(event) {
     event.preventDefault();
     
     // 【重要】ここに先ほどデプロイしたGASのウェブアプリURLを貼り付けます
-    const gasWebAppUrl = 'ここにGASウェブアプリのURLを貼り付けます';
+    const gasWebAppUrl = 'https://script.google.com/macros/s/AKfycbyeYLZXSn1jizBh8ro32ToGebRK6T28qn7S9CpAfmW7WVDIvg_z9ZliqWJW3S-LKle0Ig/exec';
 
     const form = event.target;
     const formData = new FormData(form);
