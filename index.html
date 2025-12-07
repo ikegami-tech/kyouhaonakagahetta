@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>SysLog (システム課日報)</title>
     <style>
-        /* CSSは<head>タグ内にあるのでOKです */
+        /* CSSスタイルはここにあります */
         body { font-family: sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
         h1 { border-bottom: 2px solid #ccc; padding-bottom: 5px; }
         .report-form input[type="text"], .report-form textarea, .report-form select {
@@ -47,15 +47,18 @@
         </div>
 
     <script>
-        // GASのURL
+        // ----------------------------------------------------
+        // 1. 設定
+        // ----------------------------------------------------
+        // ここにGASのウェブアプリURLを貼り付けます
         const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwV0pz9MJwhiHAMywG6nMRBWefmcpa1YpSDYwfAYkrROpiFTez9TuINq0tfM0T3PvdGGg/exec'; 
 
         // ----------------------------------------------------
-        // 機能 ②: 日報一覧表示機能 (GET)
+        // 2. 機能 ②: 日報一覧表示機能 (GET)
         // ----------------------------------------------------
         async function fetchReports() {
-             // ... (ここに、エラーを防ぐために必要だった fetchReports のコード全体を入れます) ...
-             try {
+            try {
+                // GAS側でCORSヘッダーを付けているので、一覧を取得できます
                 const response = await fetch(GAS_WEB_APP_URL); 
                 const data = await response.json();
                 
@@ -90,8 +93,7 @@
         }
         
         // ----------------------------------------------------
-        // 機能 ①: 日報投稿機能 (POST) 
-        // ★★★ postReport関数は一つだけ残します ★★★
+        // 3. 機能 ①: 日報投稿機能 (POST) 
         // ----------------------------------------------------
         async function postReport() {
             const name = document.getElementById('name').value.trim();
@@ -106,11 +108,7 @@
             }
 
             const postData = {
-                name: name,
-                condition: condition,
-                todayTask: todayTask,
-                nextTask: nextTask,
-                impression: impression
+                name: name, condition: condition, todayTask: todayTask, nextTask: nextTask, impression: impression
             };
 
             try {
@@ -133,13 +131,13 @@
         }
 
         // ----------------------------------------------------
-        // 機能 ③: 「いいね」リアクション機能 (保留部分)
+        // 4. 機能 ③: 「いいね」リアクション機能 (保留部分)
         // ----------------------------------------------------
         async function likeReport(reportId, buttonElement) {
             alert(`ID: ${reportId} の日報に「いいね」を押しました！\n\n（※いいね数の更新処理は、次のステップで実装します）`);
         }
         
-        // ページ読み込み時に、一覧表示を実行
+        // 5. ページ読み込み時の処理
         window.onload = fetchReports;
 
     </script>
