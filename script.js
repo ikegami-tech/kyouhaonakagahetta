@@ -9,15 +9,14 @@ const messageElement = document.getElementById('message');
 dataForm.addEventListener('submit', function(e) {
     e.preventDefault(); 
     
-    // URLが設定されているか確認
-    if (!GAS_WEB_APP_URL || GAS_WEB_APP_URL.includes('【')) {
-        alert("GASのURLが設定されていません。index.htmlの隠しフィールドを修正してください。");
+    // 💡 修正箇所: URLが空かどうかだけをチェックします。
+    if (!GAS_WEB_APP_URL) {
+        alert("GASのURLが設定されていません。index.htmlの隠しフィールドにURLを貼り付けてください。");
         return;
     }
 
     const nameInput = document.getElementById('name');
     const name = nameInput.value.trim();
-
     if (!name) {
         alert("名前を入力してください。");
         return;
