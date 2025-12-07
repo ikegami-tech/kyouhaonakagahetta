@@ -1,1 +1,31 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GAS連携ウェブアプリ</title>
+    <link rel="stylesheet" href="style.css"> 
+</head>
+<body>
 
+    <h1>📝 データ入力フォーム</h1>
+    <p>お名前を入力して送信ボタンを押してください。</p>
+    <form id="dataForm">
+        <label for="name">お名前:</label>
+        <input type="text" id="name" required>
+        <button type="submit">送信</button>
+        <p id="message"></p>
+    </form>
+
+    <hr>
+
+    <h2>📜 保存されたデータ一覧</h2>
+    <div id="dataList">
+        <p>データを読み込み中...</p>
+    </div>
+
+    <input type="hidden" id="gas-url" value="https://script.google.com/macros/s/AKfycbwPJ8nfApQXfhwSsPD9lvL7m91O1DKc2BgVyUayg_LgAYmJfrdJCp611MPhI9aoqjPM/exec">
+
+    <script src="script.js"></script>
+</body>
+</html>
