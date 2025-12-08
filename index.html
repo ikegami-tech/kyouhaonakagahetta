@@ -111,8 +111,7 @@
                 const response = await fetch(GAS_WEB_APP_URL); 
                 const data = await response.json();
                 const reports = data.data; // GASから返されるJSONの構造が { data: [...] } の場合
-                
-                const reports = dummyData; // 動作確認のためダミーデータを使用
+            
 
                 const reportListElement = document.getElementById('reportList');
                 reportListElement.innerHTML = ''; 
