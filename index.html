@@ -115,20 +115,20 @@
                 reportListElement.innerHTML = ''; 
                 
                 reports.forEach(report => {
-                    // ★★★ 修正箇所：いいねした人のリスト表示用の文字列を生成 ★★★
-                    const likedByListHtml = report.likedBy && report.likedBy.length > 0
-                        ? `<div class="liked-by-list">${report.likedBy.map(name => `**${name}いいね**`).join(' ')}</div>`
-                        : ''; // いいねがない場合は空の文字列
+                    const formattedDate = formatDate(report.date); 
+                    const likedByListHtml = report.likedBy && report.likedBy.length > 0
+                        ? `<div class="liked-by-list">${report.likedBy.map(name => `**${name}いいね**`).join(' ')}</div>`
+                        : ''; // いいねがない場合は空の文字列
 
                     const item = document.createElement('div');
-                    item.className = 'report-item';
-                    item.innerHTML = `
-                        <div class="report-header">
-                            <span>**${report.name}** / ${report.date} / コンディション: ${report.condition}</span>
-                            <span class="like-section">
-                                <button class="like-button" onclick="likeReport('${report.id}', this)">
-                                    いいね👍 (${report.likedBy ? report.likedBy.length : 0})
-                                </button>
+                    item.className = 'report-item';
+                    item.innerHTML = `
+                        <div class="report-header">
+                                                        <span>**${report.name}** / ${formattedDate} / コンディション: ${report.condition}</span>
+                            <span class="like-section">
+                                <button class="like-button" onclick="likeReport('${report.id}', this)">
+                                    いいね👍 (${report.likedBy ? report.likedBy.length : 0})
+                                </button>
                                 ${likedByListHtml}
                             </span>
                         </div>
