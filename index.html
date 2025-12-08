@@ -1,3 +1,6 @@
+いいね機能初期デバック
+
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -88,105 +91,58 @@
         // 1. 設定
         // ----------------------------------------------------
         // ここにGASのウェブアプリURLを貼り付けます
-        const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxamhnhISo4BymAy8-0_c1LbJTJtPiWA4wXHdjWJbwgugO-yFpwsAH6v322AZZooIfDKQ/exec'; 
-// ----------------------------------------------------
-// 新しい補助関数: 日付を 'YYYY/MM/DD HH時MM分' 形式にフォーマットする
-// ----------------------------------------------------
-function formatDate(dateString) {
-    const date = new Date(dateString);
-    
-    // 日付の各要素を取得
-    const year = date.getFullYear();
-    // getMonth() は 0 から始まるため +1
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    const hour = String(date.getHours()).padStart(2, '0');
-    const minute = String(date.getMinutes()).padStart(2, '0');
-    
-    // ご要望の形式 '2025/11/11 00時00分' に整形して返す
-    return `${year}/${month}/${day} ${hour}時${minute}分`;
-}
+        const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwV0pz9MJwhiHAMywG6nMRBWefmcpa1YpSDYwfAYkrROpiFTez9TuINq0tfM0T3PvdGGg/exec'; 
+
         // ----------------------------------------------------
         // 2. 機能 ②: 日報一覧表示機能 (GET)
         // ----------------------------------------------------
         async function fetchReports() {
-           // ----------------------------------------------------
-// 2. 機能 ②: 日報一覧表示機能 (GET)
-// ----------------------------------------------------
-async function fetchReports() {
-    // reports変数宣言と初期化 (tryの外でletを使う)
-    let reports = []; 
-    
-    // 仮のデータ構造（ダミーデータ）
-    const dummyData = [
-        { id: '1', name: '佐藤', date: '2025-12-07T08:58:00.000Z', condition: '😀', todayTask: 'あ', nextTask: 'あ', impression: 'あ', likedBy: ['石井', '渡辺'] },
-        { id: '2', name: '田中', date: '2025-12-06T10:30:00.000Z', condition: '💪', todayTask: 'テスト', nextTask: 'テスト', impression: 'テスト', likedBy: ['池上'] },
-        { id: '3', name: '山本', date: '2025-12-05T09:15:00.000Z', condition: '🙂', todayTask: '作業', nextTask: '作業', impression: '作業', likedBy: [] } // いいねなし
-    ];
-    
-    // まず reports にダミーデータを設定します (通信が失敗したときの保険)
-    reports = dummyData;
+            try {
+                // 仮のデータ構造: 実際にはGASからこの形式でデータが返ってくることを想定します
+                // likedBy: いいねした人の名前の配列
+                const dummyData = [
+                    { id: '1', name: '佐藤', date: '2025-12-07T08:58:00.000Z', condition: '😀', todayTask: 'あ', nextTask: 'あ', impression: 'あ', likedBy: ['石井', '渡辺'] },
+                    { id: '2', name: '田中', date: '2025-12-06T10:30:00.000Z', condition: '💪', todayTask: 'テスト', nextTask: 'テスト', impression: 'テスト', likedBy: ['池上'] },
+                    { id: '3', name: '山本', date: '2025-12-05T09:15:00.000Z', condition: '🙂', todayTask: '作業', nextTask: '作業', impression: '作業', likedBy: [] } // いいねなし
+                ];
 
-    try {
-        // --- サーバー通信を開始（GASからデータを取得） ---
-        const response = await fetch(GAS_WEB_APP_URL); 
-        const data = await response.json(); // responseの中身をJSONとして解析
 
-        // サーバーからデータが正常に返ってきた場合のみ、reports を上書きします
-        if (data && data.data && data.data.length > 0) {
-             reports = data.data; 
-             console.log("GASから正常にデータを受信しました。");
-        } else {
-             // 応答はあったがデータが空だった場合
-             console.warn("GASからの応答はありましたが、日報データが空です。ダミーデータを使用します。");
-        }
-    
-    } catch (error) {
-        // 通信エラーやJSON解析エラーが発生した場合、このブロックに来る
-        // reports はダミーデータのままなので、そのまま表示処理へ進みます。
-        console.error("日報の読み込み中に通信エラーが発生しました。:", error);
-        document.getElementById('reportList').innerHTML = '<p>通信エラーが発生しました。ダミーデータを使用して表示します。</p>';
-    }
-    
-    // --- 画面表示処理 ---
-    
-    // try/catchの外に出すことで、reportsがGASデータでもダミーデータでも安全に表示される
-    const reportListElement = document.getElementById('reportList');
-    
-    // 通信エラーメッセージが出ていなければ、リストをクリアする
-    if (document.getElementById('reportList').innerHTML.indexOf("通信エラー") === -1) {
-        reportListElement.innerHTML = ''; 
-    }
+                // 実際のデータ取得処理 (コメントアウトしてダミーデータを使用)
+                // const response = await fetch(GAS_WEB_APP_URL); 
+                // const data = await response.json();
+                // const reports = data.data;
+                
+                const reports = dummyData; // 動作確認のためダミーデータを使用
 
-    // reportsは必ず定義されているため、ここで安全にループできます
-    reports.forEach(report => {
-        const formattedDate = formatDate(report.date); 
-        
-        const likedByListHtml = report.likedBy && report.likedBy.length > 0
-            ? `<div class="liked-by-list">${report.likedBy.map(name => `**${name}いいね**`).join(' ')}</div>`
-            : ''; 
+                const reportListElement = document.getElementById('reportList');
+                reportListElement.innerHTML = ''; 
+                
+                reports.forEach(report => {
+                    // ★★★ 修正箇所：いいねした人のリスト表示用の文字列を生成 ★★★
+                    const likedByListHtml = report.likedBy && report.likedBy.length > 0
+                        ? `<div class="liked-by-list">${report.likedBy.map(name => `**${name}いいね**`).join(' ')}</div>`
+                        : ''; // いいねがない場合は空の文字列
 
-        const item = document.createElement('div');
-        item.className = 'report-item';
-        item.innerHTML = `
-            <div class="report-header">
-                <span>**${report.name}** / ${formattedDate} / コンディション: ${report.condition}</span>
-                <span class="like-section">
-                    <button class="like-button" onclick="likeReport('${report.id}', this)">
-                        いいね👍 (${report.likedBy ? report.likedBy.length : 0})
-                    </button>
-                    ${likedByListHtml}
-                </span>
-            </div>
-            <div class="report-content">
-                <strong>今日やったこと:</strong> ${report.todayTask.replace(/\n/g, '<br>')}
-                <strong>翌営業日やること:</strong> ${report.nextTask.replace(/\n/g, '<br>')}
-                <strong>所感・学び:</strong> ${report.impression.replace(/\n/g, '<br>')}
-            </div>
-        `;
-        reportListElement.appendChild(item);
-    });
-}
+                    const item = document.createElement('div');
+                    item.className = 'report-item';
+                    item.innerHTML = `
+                        <div class="report-header">
+                            <span>**${report.name}** / ${report.date} / コンディション: ${report.condition}</span>
+                            <span class="like-section">
+                                <button class="like-button" onclick="likeReport('${report.id}', this)">
+                                    いいね👍 (${report.likedBy ? report.likedBy.length : 0})
+                                </button>
+                                ${likedByListHtml}
+                            </span>
+                        </div>
+                        <div class="report-content">
+                            <strong>今日やったこと:</strong> ${report.todayTask.replace(/\n/g, '<br>')}
+                            <strong>翌営業日やること:</strong> ${report.nextTask.replace(/\n/g, '<br>')}
+                            <strong>所感・学び:</strong> ${report.impression.replace(/\n/g, '<br>')}
+                        </div>
+                    `;
+                    reportListElement.appendChild(item);
+                });
 
             } catch (error) {
                 console.error("日報の読み込み中にエラーが発生しました:", error);
