@@ -1,6 +1,3 @@
-いいね機能初期デバック
-
-
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -192,46 +189,13 @@
         }
 
         // ----------------------------------------------------
-// 4. 機能 ③: 「いいね」リアクション機能 - (変更なし)
-// ----------------------------------------------------
-async function likeReport(reportId, buttonElement) {
-                
-                const liker = document.getElementById('name').value.trim();
-                
-                if (!liker) {
-                    alert('いいねをするには、日報投稿フォームの「名前」欄にあなたの名前を入力してください。');
-                    return;
-                }
-
-                const postData = {
-                    action: 'like',     
-                    id: reportId,      
-                    liker: liker       
-                };
-
-                try {
-                    const response = await fetch(GAS_WEB_APP_URL, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(postData)
-                    });
-                    
-                    const result = await response.json();
-                    
-                    if (result.status === 'success') {
-                        if(!result.message.includes('already liked')){
-                            console.log('いいね成功');
-                        }
-                        fetchReports(); // 成功したら一覧を再読み込み
-                    } else {
-                        throw new Error(result.message || "いいね処理に失敗しました。");
-                    }
-
-                } catch (error) {
-                    console.error('いいね中にエラーが発生しました:', error);
-                    alert('いいね処理で通信エラーが発生しました。:' + error.message);
-                }
-            }
+        // 4. 機能 ③: 「いいね」リアクション機能 
+        // ----------------------------------------------------
+        async function likeReport(reportId, buttonElement) {
+            // 今回はまだサーバー側（GAS）の処理がないため、アラートのみにしています。
+            // 誰がいいねしたかの情報をGASへ送る処理を後で追加しましょう。
+            alert(`ID: ${reportId} の日報に「いいね」を押しました！\n\n（※現在は、いいねした人の名前をサーバーに送る処理は保留中です）`);
+        }
         
         // 5. ページ読み込み時の処理
         window.onload = fetchReports;
