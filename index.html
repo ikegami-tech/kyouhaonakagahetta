@@ -12,9 +12,19 @@
         }
         .report-form button { padding: 10px 15px; background-color: #4CAF50; color: white; border: none; cursor: pointer; }
         .report-item { border: 1px solid #eee; padding: 15px; margin-bottom: 10px; border-radius: 5px; }
+        /* report-headerを少し調整して、いいねリストの表示スペースを確保 */
         .report-header { display: flex; justify-content: space-between; font-size: 0.9em; color: #666; margin-bottom: 5px;}
         .report-content strong { display: block; margin-top: 5px; color: #333; }
         .like-button { background-color: #f0f0f0; border: none; padding: 5px 10px; cursor: pointer; border-radius: 3px; }
+        /* 新しいスタイル：いいねした人の名前リスト用 */
+        .liked-by-list { 
+            font-size: 0.9em; 
+            color: #444; 
+            margin-top: 5px;
+            /* いいねボタンと同じ行に表示するために、flexアイテムにするか、report-header内に置く必要がありますが、
+               今回はシンプルにボタンの下に表示します。 */
+            text-align: right; 
+        }
     </style>
 </head>
 <body>
@@ -22,8 +32,8 @@
     <h1>システム課　日報</h1>
 
     <form class="report-form">
-        <h2>日報を投稿する</h2>
-        <input type="text" id="name" placeholder="名前 (必須)" required>
+        <h2>日報を投稿する</h2>
+        <input type="text" id="name" placeholder="名前 (必須)" required>
     
     <label>コンディション (必須):</label><br>
 
@@ -85,23 +95,41 @@
         // ----------------------------------------------------
         async function fetchReports() {
             try {
-                // GAS側でCORSヘッダーを付けているので、一覧を取得できます
-                const response = await fetch(GAS_WEB_APP_URL); 
-                const data = await response.json();
+                // 仮のデータ構造: 実際にはGASからこの形式でデータが返ってくることを想定します
+                // likedBy: いいねした人の名前の配列
+                const dummyData = [
+                    { id: '1', name: '佐藤', date: '2025-12-07T08:58:00.000Z', condition: '😀', todayTask: 'あ', nextTask: 'あ', impression: 'あ', likedBy: ['石井', '渡辺'] },
+                    { id: '2', name: '田中', date: '2025-12-06T10:30:00.000Z', condition: '💪', todayTask: 'テスト', nextTask: 'テスト', impression: 'テスト', likedBy: ['池上'] },
+                    { id: '3', name: '山本', date: '2025-12-05T09:15:00.000Z', condition: '🙂', todayTask: '作業', nextTask: '作業', impression: '作業', likedBy: [] } // いいねなし
+                ];
+
+
+                // 実際のデータ取得処理 (コメントアウトしてダミーデータを使用)
+                // const response = await fetch(GAS_WEB_APP_URL); 
+                // const data = await response.json();
+                // const reports = data.data;
                 
+                const reports = dummyData; // 動作確認のためダミーデータを使用
+
                 const reportListElement = document.getElementById('reportList');
                 reportListElement.innerHTML = ''; 
                 
-                data.data.forEach(report => {
+                reports.forEach(report => {
+                    // ★★★ 修正箇所：いいねした人のリスト表示用の文字列を生成 ★★★
+                    const likedByListHtml = report.likedBy && report.likedBy.length > 0
+                        ? `<div class="liked-by-list">${report.likedBy.map(name => `**${name}いいね**`).join(' ')}</div>`
+                        : ''; // いいねがない場合は空の文字列
+
                     const item = document.createElement('div');
                     item.className = 'report-item';
                     item.innerHTML = `
                         <div class="report-header">
                             <span>**${report.name}** / ${report.date} / コンディション: ${report.condition}</span>
-                            <span>
+                            <span class="like-section">
                                 <button class="like-button" onclick="likeReport('${report.id}', this)">
-                                    いいね👍 (<span id="likeCount-${report.id}">${report.likes}</span>)
+                                    いいね👍 (${report.likedBy ? report.likedBy.length : 0})
                                 </button>
+                                ${likedByListHtml}
                             </span>
                         </div>
                         <div class="report-content">
@@ -115,7 +143,9 @@
 
             } catch (error) {
                 console.error("日報の読み込み中にエラーが発生しました:", error);
-                document.getElementById('reportList').innerHTML = '<p>日報の読み込みに失敗しました。</p>';
+                // 実際のデータ取得時にエラーが発生した場合のメッセージ
+                // document.getElementById('reportList').innerHTML = '<p>日報の読み込みに失敗しました。</p>';
+                document.getElementById('reportList').innerHTML = '<p>ダミーデータを使用して表示しています。</p>';
             }
         }
         
@@ -159,10 +189,12 @@
         }
 
         // ----------------------------------------------------
-        // 4. 機能 ③: 「いいね」リアクション機能 (保留部分)
+        // 4. 機能 ③: 「いいね」リアクション機能 
         // ----------------------------------------------------
         async function likeReport(reportId, buttonElement) {
-            alert(`ID: ${reportId} の日報に「いいね」を押しました！\n\n（※いいね数の更新処理は、次のステップで実装します）`);
+            // 今回はまだサーバー側（GAS）の処理がないため、アラートのみにしています。
+            // 誰がいいねしたかの情報をGASへ送る処理を後で追加しましょう。
+            alert(`ID: ${reportId} の日報に「いいね」を押しました！\n\n（※現在は、いいねした人の名前をサーバーに送る処理は保留中です）`);
         }
         
         // 5. ページ読み込み時の処理
