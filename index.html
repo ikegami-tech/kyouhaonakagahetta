@@ -1,88 +1,4 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <title>しす★ろぐ</title>
-    <style>
-        /* CSSスタイルはここにあります */
-        body { font-family: sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
-        h1 { border-bottom: 2px solid #ccc; padding-bottom: 5px; }
-        .report-form input[type="text"], .report-form textarea, .report-form select {
-            width: 100%; padding: 8px; margin-bottom: 10px; box-sizing: border-box;
-        }
-        .report-form button { padding: 10px 15px; background-color: #4CAF50; color: white; border: none; cursor: pointer; }
-        .report-item { border: 1px solid #eee; padding: 15px; margin-bottom: 10px; border-radius: 5px; }
-        /* report-headerを少し調整して、いいねリストの表示スペースを確保 */
-        .report-header { display: flex; justify-content: space-between; font-size: 0.9em; color: #666; margin-bottom: 5px;}
-        .report-content strong { display: block; margin-top: 5px; color: #333; }
-        .like-button { background-color: #f0f0f0; border: none; padding: 5px 10px; cursor: pointer; border-radius: 3px; }
-        /* 新しいスタイル：いいねした人の名前リスト用 */
-        .liked-by-list { 
-            font-size: 0.9em; 
-            color: #444; 
-            margin-top: 5px;
-            /* いいねボタンと同じ行に表示するために、flexアイテムにするか、report-header内に置く必要がありますが、
-               今回はシンプルにボタンの下に表示します。 */
-            text-align: right; 
-        }
-    </style>
-</head>
-<body>
-
-    <h1>システム課〠日報</h1>
-
-    <form class="report-form">
-        <h2>日報を投稿する</h2>
-        <input type="text" id="name" placeholder="名前 (必須)" required>
-    
-    <label>コンディション (必須):</label><br>
-
-<div class="condition-radios">
-    <input type="radio" id="cond1" name="condition" value="🤩" required>
-    <label for="cond1">🤩 (最高)</label>
-    
-    <input type="radio" id="cond2" name="condition" value="😀" required>
-    <label for="cond2">😀 (好調)</label>
-    
-    <input type="radio" id="cond3" name="condition" value="🙂" required>
-    <label for="cond3">🙂 (普通)</label>
-    
-    <input type="radio" id="cond4" name="condition" value="😐" required>
-    <label for="cond4">😐 (ぼちぼち)</label>
-    
-    <input type="radio" id="cond5" name="condition" value="😵‍💫" required>
-    <label for="cond5">😵‍💫 (やや疲労)</label>
-    
-    <input type="radio" id="cond6" name="condition" value="😫" required>
-    <label for="cond6">😫 (不調)</label>
-    
-    <input type="radio" id="cond7" name="condition" value="😴" required>
-    <label for="cond7">😴 (寝不足)</label>
-    
-    <input type="radio" id="cond8" name="condition" value="💪" required>
-    <label for="cond8">💪 (やる気満々)</label>
-    
-    <input type="radio" id="cond9" name="condition" value="🤔" required>
-    <label for="cond9">🤔 (考え中)</label>
-    
-    <input type="radio" id="cond10" name="condition" value="🤢" required>
-    <label for="cond10">🤢 (二日酔い)</label>
-
-</div>
-<br>
-    
-    <textarea id="todayTask" placeholder="今日やったこと (必須)" rows="3" required></textarea>
-    <textarea id="nextTask" placeholder="翌営業日やること (必須)" rows="3" required></textarea>
-    <textarea id="impression" placeholder="所感・学び (任意)" rows="3"></textarea>
-    
-    <button type="button" onclick="postReport()">送信</button> </form>
-
-    <hr>
-    
-    <h2>過去の日報一覧</h2>
-    <div id="reportList">
-        </div>
-
+// (省略)
     <script>
         // ----------------------------------------------------
         // 1. 設定
@@ -96,7 +12,7 @@
         async function fetchReports() {
             try {
                 
-                // ↓↓↓ 実際のデータ取得処理を有効化します ↓↓↓
+                // 🌟 GASからデータを取得する処理を有効にします
                 const response = await fetch(GAS_WEB_APP_URL); 
                 const data = await response.json();
                 const reports = data.data; // GASから返ってきたデータを使用
@@ -105,15 +21,15 @@
                 reportListElement.innerHTML = ''; 
                 
                 reports.forEach(report => {
-                    // ★★★ 修正箇所：いいねした人のリスト表示用の文字列を生成 ★★★
+                    // いいねした人リストのHTMLを生成
                     const likedByListHtml = report.likedBy && report.likedBy.length > 0
                         ? `<div class="liked-by-list">${report.likedBy.map(name => `**${name}いいね**`).join(' ')}</div>`
-                        : ''; // いいねがない場合は空の文字列
+                        : ''; 
 
                     const item = document.createElement('div');
                     item.className = 'report-item';
                     
-                    // ↓↓↓ HTMLの構造はこれでOKです ↓↓↓
+                    // 🌟 日報本文の表示形式を修正し、改行タグを確実に入れます
                     item.innerHTML = `
                         <div class="report-header">
                             <span>**${report.name}** / ${report.date} / コンディション: ${report.condition}</span>
@@ -125,9 +41,9 @@
                             </span>
                         </div>
                         <div class="report-content">
-                            <strong>今日やったこと:</strong> ${report.todayTask.replace(/\n/g, '<br>')}
-                            <strong>翌営業日やること:</strong> ${report.nextTask.replace(/\n/g, '<br>')}
-                            <strong>所感・学び:</strong> ${report.impression.replace(/\n/g, '<br>')}
+                            <strong>今日やったこと:</strong> ${report.todayTask ? report.todayTask.replace(/\n/g, '<br>') : ''}
+                            <strong>翌営業日やること:</strong> ${report.nextTask ? report.nextTask.replace(/\n/g, '<br>') : ''}
+                            <strong>所感・学び:</strong> ${report.impression ? report.impression.replace(/\n/g, '<br>') : ''}
                         </div>
                     `;
                     reportListElement.appendChild(item);
@@ -135,93 +51,8 @@
 
             } catch (error) {
                 console.error("日報の読み込み中にエラーが発生しました:", error);
-                // エラーメッセージに修正
-                document.getElementById('reportList').innerHTML = '<p>日報の読み込みに失敗しました。</p>';
+                // データの読み込みに失敗した場合のメッセージに変更
+                document.getElementById('reportList').innerHTML = '<p>日報の読み込みに失敗しました。GASが最新版か確認してください。</p>';
             }
         }
-        
-        // ----------------------------------------------------
-        // 3. 機能 ①: 日報投稿機能 (POST) 
-        // ----------------------------------------------------
-        async function postReport() {
-            const name = document.getElementById('name').value.trim();
-            const conditionElement = document.querySelector('input[name="condition"]:checked');
-            const condition = conditionElement ? conditionElement.value : '';
-            const todayTask = document.getElementById('todayTask').value.trim();
-            const nextTask = document.getElementById('nextTask').value.trim();
-            const impression = document.getElementById('impression').value.trim();
-
-            if (!name || !condition || !todayTask || !nextTask) {
-                alert('名前、コンディション、今日やったこと、翌営業日やること は必須項目です。');
-                return;
-            }
-
-            const postData = {
-                name: name, condition: condition, todayTask: todayTask, nextTask: nextTask, impression: impression
-            };
-
-            try {
-                // CORSエラー回避のため no-cors を使用
-                await fetch(GAS_WEB_APP_URL, {
-                    method: 'POST',
-                    mode: 'no-cors', 
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(postData) 
-                });
-
-                alert('日報が正常に投稿されました！');
-                document.querySelector('.report-form').reset(); 
-                fetchReports(); // 投稿後、一覧を更新
-
-            } catch (error) {
-                console.error('投稿中にエラーが発生しました:', error);
-                alert('通信エラーにより投稿できませんでした。');
-            }
-        }
-
-        // ----------------------------------------------------
-        // 4. 機能 ③: 「いいね」リアクション機能 
-        // ----------------------------------------------------
-        async function likeReport(reportId, buttonElement) {
-    // 誰がいいねしたかを確認するための質問ダイアログ
-    const likerName = prompt("【いいねをする人を選択してください】\n「石井」「渡辺」「池上」のいずれかを入力してください。");
-
-    // 入力が無効なら処理を中断
-    if (!likerName || !['石井', '渡辺', '池上'].includes(likerName.trim())) {
-        alert("無効な名前が入力されたか、キャンセルされました。");
-        return;
-    }
-
-    // サーバー（GAS）に送るデータを用意
-    const postData = {
-        id: reportId,              // どの記事のIDか
-        liker: likerName.trim(),   // 誰がいいねしたか
-        action: 'like'             // サーバーに「いいね処理をお願い！」と教える
-    };
-
-    try {
-        // データをGASのURLへ送信 (POSTメソッド)
-        await fetch(GAS_WEB_APP_URL, {
-            method: 'POST',
-            mode: 'no-cors', 
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(postData) 
-        });
-
-        alert(`${likerName.trim()}さんがいいねをしました！すぐに一覧を更新します。`);
-        
-        // ★重要★ 送信が終わったら、最新のデータを取り直す！
-        fetchReports(); // これで「石井いいね」などが表示されます
-
-    } catch (error) {
-        console.error('いいね送信中にエラーが発生しました:', error);
-        alert('通信エラーによりいいねを送信できませんでした。');
-    }
-}
-        
-        // 5. ページ読み込み時の処理
-        window.onload = fetchReports;
-
-    </script>
-</body>
-</html>
+// (省略)
