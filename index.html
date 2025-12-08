@@ -97,11 +97,54 @@
             try {
                 // 仮のデータ構造: 実際にはGASからこの形式でデータが返ってくることを想定します
                 // likedBy: いいねした人の名前の配列
-                const dummyData = [
-                    { id: '1', name: '佐藤', date: '2025-12-07T08:58:00.000Z', condition: '😀', todayTask: 'あ', nextTask: 'あ', impression: 'あ', likedBy: ['石井', '渡辺'] },
-                    { id: '2', name: '田中', date: '2025-12-06T10:30:00.000Z', condition: '💪', todayTask: 'テスト', nextTask: 'テスト', impression: 'テスト', likedBy: ['池上'] },
-                    { id: '3', name: '山本', date: '2025-12-05T09:15:00.000Z', condition: '🙂', todayTask: '作業', nextTask: '作業', impression: '作業', likedBy: [] } // いいねなし
-                ];
+                async function fetchReports() {
+    try {
+        // ... (データ取得のコードはそのまま) ...
+        const reports = data.data || []; 
+        const reportListElement = document.getElementById('reportList');
+        reportListElement.innerHTML = '';
+        
+        reports.forEach(report => {
+            
+            // ★★★ 修正箇所 1: 日付の表示形式を変換する処理 ★★★
+            const dateObj = new Date(report.date); // 1. Dateオブジェクト（日付の箱）を作成
+            
+            // 2 & 3. 部品を取り出し、2桁に調整する（getMonthは0から始まるので +1 が必要）
+            const year = dateObj.getFullYear();
+            const month = (dateObj.getMonth() + 1).toString().padStart(2, '0');
+            const day = dateObj.getDate().toString().padStart(2, '0');
+            const hours = dateObj.getHours().toString().padStart(2, '0');
+            const minutes = dateObj.getMinutes().toString().padStart(2, '0');
+
+            // 4. 読みやすい形式に連結
+            const formattedDate = `${year}/${month}/${day} ${hours}時${minutes}分`;
+
+
+            // いいねした人のリスト表示（ここは表示形式を守るためそのまま）
+            const likedByListHtml = report.likedBy && report.likedBy.length > 0
+                ? `<div class="liked-by-list">${report.likedBy.map(name => `**${name}いいね**`).join('')}</div>`
+                : ''; 
+
+            const item = document.createElement('div');
+            item.className = 'report-item';
+            item.innerHTML = `
+                <div class="report-header">
+                    <span>**${report.name}** / ${formattedDate} / コンディション: ${report.condition}</span>
+                    <span class="like-section">
+                        <button class="like-button" onclick="likeReport('${report.id}', this)">
+                            いいね👍 (${report.likedBy ? report.likedBy.length : 0})
+                        </button>
+                        ${likedByListHtml}
+                    </span>
+                </div>
+                `;
+            reportListElement.appendChild(item);
+        });
+
+    } catch (error) {
+        // ... (エラー処理) ...
+    }
+}
 
 
                 // 実際のデータ取得処理 (コメントアウトしてダミーデータを使用)
