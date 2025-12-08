@@ -91,7 +91,7 @@
         // 1. 設定
         // ----------------------------------------------------
         // ここにGASのウェブアプリURLを貼り付けます
-        const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwV0pz9MJwhiHAMywG6nMRBWefmcpa1YpSDYwfAYkrROpiFTez9TuINq0tfM0T3PvdGGg/exec'; 
+        const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxamhnhISo4BymAy8-0_c1LbJTJtPiWA4wXHdjWJbwgugO-yFpwsAH6v322AZZooIfDKQ/exec'; 
 
         // ----------------------------------------------------
         // 2. 機能 ②: 日報一覧表示機能 (GET)
@@ -107,10 +107,10 @@
                 ];
 
 
-                // 実際のデータ取得処理 (コメントアウトしてダミーデータを使用)
-                // const response = await fetch(GAS_WEB_APP_URL); 
-                // const data = await response.json();
-                // const reports = data.data;
+                // 実際のデータ取得処理 (コメントアウトを解除して有効化)
+                const response = await fetch(GAS_WEB_APP_URL); 
+                const data = await response.json();
+                const reports = data.data; // GASから返されるJSONの構造が { data: [...] } の場合
                 
                 const reports = dummyData; // 動作確認のためダミーデータを使用
 
