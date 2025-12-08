@@ -1,6 +1,3 @@
-いいね機能初期デバック
-
-
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -117,6 +114,23 @@
                 reportListElement.innerHTML = ''; 
                 
                 reports.forEach(report => {
+    
+                        // 【✅ 修正 1-1: 日付の変換処理を追加】
+                        let displayDate = report.date; // 変換前の値を保持
+                        try {
+                            const dateObj = new Date(report.date);
+        // 日本語環境で「年/月/日 時:分」形式に変換
+        displayDate = dateObj.toLocaleDateString('ja-JP', {
+            year: 'numeric', month: '2-digit', day: '2-digit'
+        }) + ' ' + dateObj.toLocaleTimeString('ja-JP', {
+            hour: '2-digit', minute: '2-digit'
+        });
+    } catch (e) {
+        // 変換に失敗しても、元の文字列をそのまま表示する
+    }
+
+    // ★★★ 修正 1-2: HTML生成部分で、日付変数を置き換える ★★★
+    // ...
                     // ★★★ 修正箇所：いいねした人のリスト表示用の文字列を生成 ★★★
                     const likedByListHtml = report.likedBy && report.likedBy.length > 0
                         ? `<div class="liked-by-list">${report.likedBy.map(name => `**${name}いいね**`).join(' ')}</div>`
@@ -126,7 +140,7 @@
                     item.className = 'report-item';
                     item.innerHTML = `
                         <div class="report-header">
-                            <span>**${report.name}** / ${report.date} / コンディション: ${report.condition}</span>
+                            <span>**${report.name}** / ${displayDate} / コンディション: ${report.condition}</span>
                             <span class="like-section">
                                 <button class="like-button" onclick="likeReport('${report.id}', this)">
                                     いいね👍 (${report.likedBy ? report.likedBy.length : 0})
@@ -144,11 +158,12 @@
                 });
 
             } catch (error) {
-                console.error("日報の読み込み中にエラーが発生しました:", error);
-                // 実際のデータ取得時にエラーが発生した場合のメッセージ
-                // document.getElementById('reportList').innerHTML = '<p>日報の読み込みに失敗しました。</p>';
-                document.getElementById('reportList').innerHTML = '<p>ダミーデータを使用して表示しています。</p>';
-            }
+    console.error("日報の読み込み中にエラーが発生しました:", error);
+    
+    // 【✅ 修正 3: エラーメッセージを変更】
+    document.getElementById('reportList').innerHTML = 
+        '<p style="color: red; padding: 20px; border: 1px solid #fcc;">⚠️ **日報の読み込みに失敗しました。** GASのデプロイ設定（アクセス権）やURLが正しいか確認してください。</p>';
+}
         }
         
         // ----------------------------------------------------
