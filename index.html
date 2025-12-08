@@ -114,7 +114,7 @@ function formatDate(dateString) {
 // 2. 機能 ②: 日報一覧表示機能 (GET)
 // ----------------------------------------------------
 async function fetchReports() {
-    // 💡 Point 1: reportsをletで宣言し、初期値として空の配列（またはダミーデータ）を設定
+    // reports変数宣言と初期化 (tryの外でletを使う)
     let reports = []; 
     
     // 仮のデータ構造（ダミーデータ）
@@ -124,7 +124,7 @@ async function fetchReports() {
         { id: '3', name: '山本', date: '2025-12-05T09:15:00.000Z', condition: '🙂', todayTask: '作業', nextTask: '作業', impression: '作業', likedBy: [] } // いいねなし
     ];
     
-    // 💡 Point 2: まず reports にダミーデータを設定します (通信が失敗したときの保険)
+    // まず reports にダミーデータを設定します (通信が失敗したときの保険)
     reports = dummyData;
 
     try {
@@ -132,7 +132,7 @@ async function fetchReports() {
         const response = await fetch(GAS_WEB_APP_URL); 
         const data = await response.json(); // responseの中身をJSONとして解析
 
-        // 💡 Point 3: サーバーからデータが正常に返ってきた場合のみ、reports を上書きします
+        // サーバーからデータが正常に返ってきた場合のみ、reports を上書きします
         if (data && data.data && data.data.length > 0) {
              reports = data.data; 
              console.log("GASから正常にデータを受信しました。");
@@ -143,17 +143,17 @@ async function fetchReports() {
     
     } catch (error) {
         // 通信エラーやJSON解析エラーが発生した場合、このブロックに来る
-        // Point 2で設定したダミーデータがそのまま使われます。
+        // reports はダミーデータのままなので、そのまま表示処理へ進みます。
         console.error("日報の読み込み中に通信エラーが発生しました。:", error);
         document.getElementById('reportList').innerHTML = '<p>通信エラーが発生しました。ダミーデータを使用して表示します。</p>';
     }
     
     // --- 画面表示処理 ---
     
-    // try/catchの外に出すことで、reportsがGASデータでもダミーデータでも表示される
+    // try/catchの外に出すことで、reportsがGASデータでもダミーデータでも安全に表示される
     const reportListElement = document.getElementById('reportList');
     
-    // エラーメッセージが表示されている場合は、ここでクリアしないように注意
+    // 通信エラーメッセージが出ていなければ、リストをクリアする
     if (document.getElementById('reportList').innerHTML.indexOf("通信エラー") === -1) {
         reportListElement.innerHTML = ''; 
     }
