@@ -16,7 +16,7 @@
         .report-header { display: flex; justify-content: space-between; font-size: 0.9em; color: #666; margin-bottom: 5px;}
         .report-content strong { display: block; margin-top: 5px; color: #333; }
         .like-button { background-color: #f0f0f0; border: none; padding: 5px 10px; cursor: pointer; border-radius: 3px; }
-        /* 新しいスタイル：いいねした人の名前リスト用 */
+        /* 画像の表示形式に合わせるためのスタイル */
         .liked-by-list { 
             font-size: 0.9em; 
             color: #444; 
@@ -86,7 +86,6 @@
         // 1. 設定
         // ----------------------------------------------------
         // ここにGASのウェブアプリURLを貼り付けます
-        // ★ご自身のGASのURLが正しく設定されているか確認してください！
         const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwV0pz9MJwhiHAMywG6nMRBWefmcpa1YpSDYwfAYkrROpiFTez9TuINq0tfM0T3PvdGGg/exec'; 
 
         // ----------------------------------------------------
@@ -96,19 +95,19 @@
             try {
                 // 実際のデータ取得処理
                 const response = await fetch(GAS_WEB_APP_URL); 
-                // 通信失敗時はエラーを投げる
-                if (!response.ok) throw new Error('GASからの応答がありませんでした。');
+                // GASからの応答が成功(200 OK)でない場合はエラーを投げる
+                if (!response.ok) throw new Error(`GAS応答エラー: ${response.status} ${response.statusText}`);
                 
                 const data = await response.json();
-                const reports = data.data || []; // data.data が存在しない場合は空の配列にする
+                const reports = data.data || [];
                 
                 const reportListElement = document.getElementById('reportList');
                 reportListElement.innerHTML = ''; 
                 
                 reports.forEach(report => {
-                    // いいねした人のリスト表示用の文字列を生成
-                    // ここを画像の表示形式に合わせます
+                    // ★★★ 修正箇所：いいねした人のリスト表示（画像に合わせる） ★★★
                     const likedByListHtml = report.likedBy && report.likedBy.length > 0
+                        // map()で各名前を **名前いいね** の形式にし、join('')で連結
                         ? `<div class="liked-by-list">${report.likedBy.map(name => `**${name}いいね**`).join('')}</div>`
                         : ''; 
 
@@ -154,9 +153,9 @@
                 alert('名前、コンディション、今日やったこと、翌営業日やること は必須項目です。');
                 return;
             }
-
+            // ★日報投稿時は action: 'post' を追加
             const postData = {
-                action: 'post', 
+                action: 'post',
                 name: name, condition: condition, todayTask: todayTask, nextTask: nextTask, impression: impression
             };
 
@@ -167,6 +166,7 @@
                     body: JSON.stringify(postData) 
                 });
 
+                // GAS側でJSONを返しているので、JSONとして結果を取得
                 const result = await response.json();
 
                 if(result.status === 'success'){
@@ -174,7 +174,8 @@
                     document.querySelector('.report-form').reset(); 
                     fetchReports(); // 投稿後、一覧を更新
                 } else {
-                    throw new Error(result.message || "投稿に失敗しました。");
+                    // GAS側でエラーが返された場合
+                    throw new Error(result.message || "GASでエラーが発生しました。");
                 }
 
             } catch (error) {
@@ -184,11 +185,10 @@
         }
 
         // ----------------------------------------------------
-        // 4. 機能 ③: 「いいね」リアクション機能 - 修正箇所
+        // 4. 機能 ③: 「いいね」リアクション機能 
         // ----------------------------------------------------
         async function likeReport(reportId, buttonElement) {
             
-            // フォームの「名前」欄に入力されている値を、いいねを押した人（liker）と見なします
             const liker = document.getElementById('name').value.trim();
             
             if (!liker) {
@@ -198,13 +198,38 @@
 
             const postData = {
                 action: 'like',     
-                id: reportId,      // 日報のUUIDを送信
+                id: reportId,      
                 liker: liker       
             };
 
             try {
-                // GASへいいね情報を送信
                 const response = await fetch(GAS_WEB_APP_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(postData)
+                });
+                
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    // すでにいいねしていた場合はアラートを出さない
+                    if(!result.message.includes('already liked')){
+                        console.log('いいね成功');
+                    }
+                    fetchReports(); // 成功したら一覧を再読み込み
+                } else {
+                    throw new Error(result.message || "いいね処理に失敗しました。");
+                }
+
+            } catch (error) {
+                console.error('いいね中にエラーが発生しました:', error);
+                alert('いいね処理で通信エラーが発生しました。:' + error.message);
+            }
+        }
+        
+        // 5. ページ読み込み時の処理
+        window.onload = fetchReports;
+
+    </script>
+</body>
+</html>
