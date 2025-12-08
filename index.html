@@ -89,7 +89,23 @@
         // ----------------------------------------------------
         // ここにGASのウェブアプリURLを貼り付けます
         const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwV0pz9MJwhiHAMywG6nMRBWefmcpa1YpSDYwfAYkrROpiFTez9TuINq0tfM0T3PvdGGg/exec'; 
-
+// ----------------------------------------------------
+// 新しい補助関数: 日付を 'YYYY/MM/DD HH時MM分' 形式にフォーマットする
+// ----------------------------------------------------
+function formatDate(dateString) {
+    const date = new Date(dateString);
+    
+    // 日付の各要素を取得
+    const year = date.getFullYear();
+    // getMonth() は 0 から始まるため +1
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hour = String(date.getHours()).padStart(2, '0');
+    const minute = String(date.getMinutes()).padStart(2, '0');
+    
+    // ご要望の形式 '2025/11/11 00時00分' に整形して返す
+    return `${year}/${month}/${day} ${hour}時${minute}分`;
+}
         // ----------------------------------------------------
         // 2. 機能 ②: 日報一覧表示機能 (GET)
         // ----------------------------------------------------
